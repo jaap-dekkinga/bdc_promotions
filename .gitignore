@@ -1,0 +1,17 @@
+# Public build output
+/public
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+.env
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
