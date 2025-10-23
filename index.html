@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BDC Promotions Shop</title>
+  <meta name="description" content="Simple static webshop demo" />
+  <style>
+    body { font-family: system-ui, Arial; padding: 1rem; max-width: 900px; margin: auto; }
+    .product { border-bottom: 1px solid #eee; padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; }
+    .product-info { max-width: 70%; }
+    .product-price { font-weight: 600; }
+    .btn { background:#0070f3;color:white;border:none;padding:0.5rem 0.9rem;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-block; }
+  </style>
+
+  <!-- Snipcart - remove comment markers and set your public key to enable Snipcart -->
+  <!--
+  <link rel="stylesheet" href="https://cdn.snipcart.com/themes/v3.3.0/default/snipcart.css" />
+  <script async src="https://cdn.snipcart.com/themes/v3.3.0/default/snipcart.js"></script>
+  <div hidden id="snipcart" data-api-key="YOUR_SNIPCART_PUBLIC_KEY"></div>
+  -->
+</head>
+<body>
+  <header>
+    <h1>BDC Promotions</h1>
+    <p>Small demo shop (HTML + JS). Products are loaded from data/products.json</p>
+  </header>
+
+  <main id="products"></main>
+
+  <footer style="margin-top:2rem">
+    <p>Built with static HTML, Python scripts for product management, and GitHub Actions for deployment.</p>
+  </footer>
+
+  <script>
+    async function loadProducts() {
+      const res = await fetch('data/products.json');
+      if (!res.ok) throw new Error('Network response was not ok');
+      const products = await res.json();
+      const container = document.getElementById('products');
+      container.innerHTML = '';
+      products.forEach(p => {
+        const el = document.createElement('section');
+        el.className = 'product';
+        el.innerHTML = `
+          <div class="product-info">
+            <h2>${p.title}</h2>
+            <p>${p.description}</p>
+            <div class="product-price">${p.price} ${p.currency || 'EUR'}</div>
+          </div>
+          <div>
+            <!-- Snipcart add button example (uncomment when Snipcart enabled) -->
+            <!--
+            <button
+              class="btn snipcart-add-item"
+              data-item-id="${p.id}"
+              data-item-name="${p.title}"
+              data-item-price="${p.price}"
+              data-item-url="${location.href}"
+              data-item-description="${p.description}">
+              Add to cart
+            </button>
+            -->
+            <!-- Simple fallback: mailto order link -->
+            <a class="btn" href="mailto:orders@example.com?subject=Order%20${encodeURIComponent(p.title)}&body=I'd%20like%20to%20order%20${encodeURIComponent(p.title)}">Order</a>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+    loadProducts().catch(e => {
+      document.getElementById('products').innerText = 'Failed to load products: ' + e;
+    });
+  </script>
+</body>
+</html>

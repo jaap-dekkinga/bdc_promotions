@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tshirt-black",
+    "title": "Be DC T-shirt (Black)",
+    "description": "Comfortable cotton t-shirt with Be DC print.",
+    "price": "19.99",
+    "currency": "EUR"
+  },
+  {
+    "id": "sticker-pack",
+    "title": "Sticker Pack",
+    "description": "Set of branded stickers.",
+    "price": "4.99",
+    "currency": "EUR"
+  }
+]
