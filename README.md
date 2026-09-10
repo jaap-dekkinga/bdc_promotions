@@ -1,43 +1,63 @@
-# bdc_promotions (static HTML + JS starter)
+# Be DC — storefront (`bdc_promotions`)
 
-This repository contains a minimal static webshop scaffold that uses:
+A single-page static site for **B★DC**, Washington, DC's first city logo and motto:
+the story of the mark, the "Be ___" platform, the DC facts that started the project
+in 2010, a seven-piece print-on-demand starter shop, and a contact form.
 
-- index.html — frontend (HTML + vanilla JS) that loads `data/products.json`.
-- data/products.json — product catalog (edit manually or use the provided Python script).
-- scripts/add_product.py — small Python helper to append a product to the catalog.
-- .github/workflows/deploy-pages.yml — GitHub Actions workflow that copies files into `public/` and deploys them to GitHub Pages (no Ruby required).
+No framework, no build step — just `index.html` + `assets/`. Deploys to GitHub Pages
+on every push to `main`.
 
-How to use (quick):
-1. Clone the repo and add the files (instructions below).
-2. Optionally enable Snipcart for a hosted cart:
-   - Sign up at https://snipcart.com
-   - Un-comment the Snipcart script/div in `index.html` and replace YOUR_SNIPCART_PUBLIC_KEY with your public key.
-   - Snipcart public key can be used directly in frontend; do not put secret keys in client code.
-3. Push to `main`. The workflow will run on push and deploy to GitHub Pages.
+## What's real vs. placeholder
 
-Commands to add these files locally and push (example):
-```bash
-# 1. Clone
-git clone https://github.com/jaap-dekkinga/bdc_promotions.git
-cd bdc_promotions
+- **Real:** the logo files, product photos, and lifestyle photography (from the Be DC
+  project folder), the origin story in Jaap's own words, and the 2010 DC research
+  figures — honestly framed as *why the project started*, not current-year stats.
+- **Per-product content:** every card carries its own `Be ___` phrase and a "Did you
+  know" DC fact, the way I LOVE NY packs a fact card with each item and DCMetroStore
+  organizes the store around the Metro map. See the competitor storefront scan for
+  the reasoning.
+- **Placeholder:** the product photos are mock-ups of the blanks, not final printed
+  samples. Retail prices are set for a lifestyle-brand feel (see
+  `product-pricing-sheet.md`); the two "estimate" costs there (polo, hat) need the
+  real Printful numbers before launch.
 
-# 2. Create a branch (recommended)
-git checkout -b scaffold/static-shop
+## Two edits before this is fully live
 
-# 3. Add the files (copy the content blocks into the corresponding paths shown above)
-#    e.g., create .github/workflows/deploy-pages.yml, index.html, data/products.json, scripts/add_product.py, .gitignore, README.md
+1. **Printful links** — open `assets/js/main.js`, find `PRINTFUL_LINKS` near the top,
+   and paste each product's public URL against the matching slug once your Printful
+   Quick Store is set up. Any slug left `""` shows a **Notify me** button that routes
+   to the contact form instead of a dead link, so the site is safe to publish before
+   the store is ready.
+2. **Contact email** — the form opens the visitor's mail app addressed to
+   `hello@b-dc.org` (`assets/js/main.js`, search for `mailto:`). Swap in the address
+   you want to receive mail at, or wire it to a free formspree.io endpoint (second
+   TODO in the same file) so messages land quietly in an inbox.
 
-# 4. Add, commit, and push
-git add .
-git commit -m "Add static webshop scaffold (HTML+JS+Python) and Pages deploy workflow"
-git push -u origin scaffold/static-shop
+Keep `data/products.json` and the hard-coded cards in `index.html` in sync — the JSON
+is the catalog reference (`scripts/add_product.py` appends to it); the HTML is what
+actually renders.
 
-# 5. Create a Pull Request on GitHub and merge to main,
-#    or push directly to main if you prefer.
+## Deploying (GitHub Pages, $0/month)
+
+`.github/workflows/static.yml` runs on every push to `main`: it uploads the repo root
+and deploys it to GitHub Pages. Nothing to configure beyond **Settings → Pages →
+Source: GitHub Actions**.
+
+- `deploy-pages.yml` is the older gh-pages/peaceiris variant, now set to manual
+  (`workflow_dispatch`) only so the two workflows don't race over the same
+  deployment. Use one or the other, not both on push.
+- To serve the site at `b-dc.org`, add a `CNAME` file at the repo root containing
+  `b-dc.org` and point a DNS `CNAME` record at the Pages address.
+
+## Files
+
 ```
-
-Notes and next steps
-- The workflow uses the GitHub Pages Actions approach (it builds a `public/` artifact and deploys from it).
-- If you plan to accept card payments, Snipcart is the easiest hosted option for a static site. Stripe Checkout is possible but requires a secure server-side endpoint to create sessions (can be hosted on Vercel/Netlify/AWS).
-- If you want me to push these files for you, grant me write access to the repository (or provide a personal access token with repo write permission). Once I have permission I will push the scaffold and confirm the first deployment.
-- If you prefer, I can instead scaffold a small Pelican (Python SSG) or Eleventy (Node) site — tell me which.
+index.html                   the whole site (story, platform, facts, shop, contact)
+assets/css/style.css         brand styles — navy #002664 / red #BB133E
+assets/js/main.js            nav toggle, Printful link config, contact form
+assets/img/                  real logo, hero, and product images
+data/products.json           catalog reference for the 7 starter SKUs (USD)
+scripts/add_product.py       append a product to data/products.json
+product-pricing-sheet.md     SKU blank costs, retail prices, and margins for Printful
+.github/workflows/static.yml active GitHub Pages deploy
+```

@@ -1,76 +1,310 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BDC Promotions Shop</title>
-  <meta name="description" content="Simple static webshop demo" />
-  <style>
-    body { font-family: system-ui, Arial; padding: 1rem; max-width: 900px; margin: auto; }
-    .product { border-bottom: 1px solid #eee; padding: 1rem 0; display: flex; justify-content: space-between; align-items: center; }
-    .product-info { max-width: 70%; }
-    .product-price { font-weight: 600; }
-    .btn { background:#0070f3;color:white;border:none;padding:0.5rem 0.9rem;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-block; }
-  </style>
-
-  <!-- Snipcart - remove comment markers and set your public key to enable Snipcart -->
-  <!--
-  <link rel="stylesheet" href="https://cdn.snipcart.com/themes/v3.3.0/default/snipcart.css" />
-  <script async src="https://cdn.snipcart.com/themes/v3.3.0/default/snipcart.js"></script>
-  <div hidden id="snipcart" data-api-key="YOUR_SNIPCART_PUBLIC_KEY"></div>
-  -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Be DC — Washington, DC's Logo &amp; Motto</title>
+<meta name="description" content="B★DC is Washington, DC's first city logo and motto. Shop the wearable mark, learn what it means, and see why everybody wants to Be DC." />
+<link rel="icon" href="assets/img/logo-color.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>BDC Promotions</h1>
-    <p>Small demo shop (HTML + JS). Products are loaded from data/products.json</p>
-  </header>
 
-  <main id="products"></main>
+<header class="site">
+  <div class="container nav">
+    <a class="nav-brand" href="#top">
+      <img src="assets/img/logo-color.png" alt="B★DC logo" />
+      <span>Washington&nbsp;D.C.</span>
+    </a>
+    <nav class="nav-links" id="nav-links">
+      <a href="#story">The Mark</a>
+      <a href="#platform">Be&nbsp;___</a>
+      <a href="#facts">DC Facts</a>
+      <a href="#shop">Shop</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-primary" href="#shop">Shop</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
 
-  <footer style="margin-top:2rem">
-    <p>Built with static HTML, Python scripts for product management, and GitHub Actions for deployment.</p>
-  </footer>
+<main id="top">
 
-  <script>
-    async function loadProducts() {
-      const res = await fetch('data/products.json');
-      if (!res.ok) throw new Error('Network response was not ok');
-      const products = await res.json();
-      const container = document.getElementById('products');
-      container.innerHTML = '';
-      products.forEach(p => {
-        const el = document.createElement('section');
-        el.className = 'product';
-        el.innerHTML = `
-          <div class="product-info">
-            <h2>${p.title}</h2>
-            <p>${p.description}</p>
-            <div class="product-price">${p.price} ${p.currency || 'EUR'}</div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <p class="eyebrow on-navy">Washington, D.C. — since 2010</p>
+        <h1>B <span class="accent">★</span> DC</h1>
+        <p class="sub">You can ♥&nbsp;NY. But everybody wants to <strong>Be&nbsp;DC.</strong> The city's first logo and motto — one mark, and a star that means whatever you want it to.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#shop">Shop the collection</a>
+          <a class="btn btn-outline on-navy" href="#story">What does it mean?</a>
+        </div>
+      </div>
+      <div class="hero-media">
+        <img src="assets/img/hero-1.jpg" alt="Man wearing a white B★DC t-shirt on the National Mall, Washington Monument behind him" />
+      </div>
+    </div>
+    <div class="hero-stripe" aria-hidden="true"></div>
+  </section>
+
+  <!-- STORY / THE MARK -->
+  <section class="story" id="story">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">The mark</p>
+        <h2>Read it like the alphabet</h2>
+        <p>Say the letters out loud — B, D, C — the way you'd say ABC, and it sounds like <em>Be DC</em>. Wearing it is a personal endorsement of the city: pride in it, confidence in it, a clear choice for it.</p>
+      </div>
+
+      <div class="story-grid">
+        <div class="mark-explainer">
+          <div class="mark-row">
+            <div class="mark-letter">B</div>
+            <div class="mark-desc">
+              <h4>Stylized capital B, navy blue</h4>
+              <p>The letterform is taken from the handwriting of the U.S. Constitution — DC is the seat of government.</p>
+            </div>
           </div>
-          <div>
-            <!-- Snipcart add button example (uncomment when Snipcart enabled) -->
-            <!--
-            <button
-              class="btn snipcart-add-item"
-              data-item-id="${p.id}"
-              data-item-name="${p.title}"
-              data-item-price="${p.price}"
-              data-item-url="${location.href}"
-              data-item-description="${p.description}">
-              Add to cart
-            </button>
-            -->
-            <!-- Simple fallback: mailto order link -->
-            <a class="btn" href="mailto:orders@example.com?subject=Order%20${encodeURIComponent(p.title)}&body=I'd%20like%20to%20order%20${encodeURIComponent(p.title)}">Order</a>
+          <div class="mark-row">
+            <div class="mark-letter">★</div>
+            <div class="mark-desc">
+              <h4>Five-pointed star</h4>
+              <p>Same shape as the stars on the U.S. and DC flags — a placeholder for any word you want to put after "Be."</p>
+            </div>
           </div>
-        `;
-        container.appendChild(el);
-      });
-    }
-    loadProducts().catch(e => {
-      document.getElementById('products').innerText = 'Failed to load products: ' + e;
-    });
-  </script>
+          <div class="mark-row">
+            <div class="mark-letter">DC</div>
+            <div class="mark-desc">
+              <h4>Serif capitals, red &amp; white stripes</h4>
+              <p>Set in the government's own typeface, filled with the stripes of both the U.S. flag and the DC flag.</p>
+            </div>
+          </div>
+          <div class="mark-row">
+            <div class="mark-letter" style="color:var(--red)">●</div>
+            <div class="mark-desc">
+              <h4>Red, white &amp; navy</h4>
+              <p>Because Washington, DC is the capital of the United States.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="read-say">
+          <p class="pull-quote">"You can <span class="r">♥</span> NY —<br>but everybody wants to <span class="r">Be DC.</span>"</p>
+          <div class="founder-note">
+            <p>"I moved to Washington, DC from the Netherlands to be with my girlfriend, who's from here. What struck me first was how beautiful and diverse the city is — and right behind it, how few tourists ever stop to enjoy it. Friends visiting from Europe would fly in for a week in New York and only 'drop by' DC to say hello."</p>
+            <cite>— Jaap Dekkinga, founder</cite>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BE ___ PLATFORM -->
+  <section class="platform" id="platform">
+    <div class="container on-navy">
+      <div class="section-head">
+        <p class="eyebrow on-navy">The platform</p>
+        <h2 style="color:#fff">One star, any word</h2>
+        <p>The star stands for whatever message you want to send. Every event, team, and institution in the city can adopt the motto and fill in its own verb — and so does every piece in the shop below.</p>
+      </div>
+      <div class="chip-grid">
+        <div class="chip"><span class="star">★</span><span class="phrase">Be welcome</span><span class="who">Dulles Airport</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be challenged</span><span class="who">Marine Corps Marathon</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be seduced</span><span class="who">Mount Vernon Wine Festival</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be informed</span><span class="who">DC.gov</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be the fan</span><span class="who">Washington Nationals</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be outrageous</span><span class="who">17th St. High Heel Race</span></div>
+        <div class="chip"><span class="star">★</span><span class="phrase">Be(come) educated</span><span class="who">UDC / American University</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DC FACTS -->
+  <section class="facts" id="facts">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Did you know</p>
+        <h2>Why DC needed a brand</h2>
+        <p>The research that kicked off Be DC in 2010 — and the question it still asks: why does a city with this much going for it have no mark of its own?</p>
+      </div>
+      <div class="facts-grid">
+        <div class="fact-card">
+          <span class="fact-num">16.4M</span>
+          <p>visitors a year — yet only 17% came for a plain vacation or getaway. Most came for business or to see family.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">$27.1B</span>
+          <p>in development completed since 2001, with billions more under construction at the time.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">270K+</span>
+          <p>jobs added since 2000 — nearly half of them in professional and business services.</p>
+        </div>
+        <div class="fact-card">
+          <span class="fact-num">#1</span>
+          <p>of the most resilient regional economies in the country, barely losing jobs through the 2009 recession.</p>
+        </div>
+      </div>
+      <p class="facts-foot">Figures from the original Be DC research (Washington.org visitor statistics, the Greater Washington Initiative, and WDCEP), collected when the project began in 2010.</p>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="shop" id="shop">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Shop</p>
+        <h2>Wear the mark</h2>
+        <p>A seven-piece starter line, printed to order so nothing sits in a warehouse. Every piece fills in the star with its own <em>Be&nbsp;___</em> and carries a fact about the city on the hang-tag.</p>
+      </div>
+
+      <div class="shop-grid">
+        <article class="product-card" data-slug="tshirt-white" data-name="B★DC T-Shirt (White)">
+          <div class="product-media"><img src="assets/img/product-tshirt-white.jpg" alt="White B★DC t-shirt" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be seen</p>
+            <div class="product-name">T-Shirt — White</div>
+            <div class="product-price">$30</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>The DC flag's three stars and two bars are lifted straight from George Washington's family coat of arms.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="tshirt-dark" data-name="B★DC T-Shirt (Heather Grey)">
+          <div class="product-media"><img src="assets/img/product-tshirt-dark.jpg" alt="Heather grey B★DC t-shirt" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be everyday</p>
+            <div class="product-name">T-Shirt — Heather Grey</div>
+            <div class="product-price">$30</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>Washington, DC belongs to no state — the Constitution set it apart as its own federal district in 1790.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="hoodie" data-name="B★DC Hoodie">
+          <div class="product-media"><img src="assets/img/product-hoodie.jpg" alt="B★DC pullover hoodie" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be warm</p>
+            <div class="product-name">Hoodie</div>
+            <div class="product-price">$52</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>At 555 feet, the Washington Monument was the tallest building in the world when it opened in 1884.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="polo" data-name="B★DC Polo">
+          <div class="product-media"><img src="assets/img/product-polo.jpg" alt="B★DC polo shirt" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be sharp</p>
+            <div class="product-name">Polo</div>
+            <div class="product-price">$40</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>A federal height limit keeps DC's skyline low — the city has no skyscrapers by law.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="hat" data-name="B★DC Hat">
+          <div class="product-media"><img src="assets/img/product-hat.jpg" alt="Navy B★DC embroidered hat" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be covered</p>
+            <div class="product-name">Hat</div>
+            <div class="product-price">$28</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>DC's street grid was laid out in 1791 by Pierre Charles L'Enfant, a French-born engineer in the Continental Army.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="tote" data-name="B★DC Tote Bag">
+          <div class="product-media"><img src="assets/img/product-tote.jpg" alt="B★DC canvas tote bag" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be prepared</p>
+            <div class="product-name">Tote Bag</div>
+            <div class="product-price">$22</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>The Library of Congress is the largest library on earth, holding more than 170 million items.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+
+        <article class="product-card" data-slug="mug" data-name="B★DC Mug">
+          <div class="product-media"><img src="assets/img/product-mug.jpg" alt="B★DC coffee mug" /></div>
+          <div class="product-body">
+            <p class="product-be"><span class="product-be-star">★</span> Be awake</p>
+            <div class="product-name">Mug</div>
+            <div class="product-price">$16</div>
+            <p class="product-fact"><span class="product-fact-label">Did you know</span>Rock Creek Park, right inside the city, is one of the oldest national parks in the country — established in 1890.</p>
+            <a class="btn btn-outline btn-block shop-btn" href="#contact">Notify me</a>
+          </div>
+        </article>
+      </div>
+
+      <p class="facts-foot" style="margin-top:26px;">Printed and shipped by our production partner as each order comes in — ships in 2–5 business days. Free shipping on orders over $50.</p>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="container contact-grid">
+      <div class="contact-info">
+        <p class="eyebrow on-navy">Contact</p>
+        <h2 style="color:#fff">Say hello</h2>
+        <p style="color:var(--on-navy-muted); margin-top:14px;">Questions about an order, a partnership, or the mark itself — reach out.</p>
+        <dl>
+          <dt>Email</dt>
+          <dd><a href="mailto:hello@b-dc.org">hello@b-dc.org</a></dd>
+          <dt>Based in</dt>
+          <dd>Washington, D.C.</dd>
+          <dt>Shipping &amp; returns</dt>
+          <dd>Every item is made to order. Sizing exchanges within 30 days; misprints and damaged items are replaced free.</dd>
+        </dl>
+      </div>
+      <form id="contact-form" novalidate>
+        <div class="form-field">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Your name" required />
+        </div>
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="How can we help?" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Send message</button>
+        <p class="form-status" id="form-status"></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="container footer-grid">
+    <a class="footer-brand" href="#top">
+      <img src="assets/img/logo-white.png" alt="B★DC" />
+    </a>
+    <nav class="footer-links">
+      <a href="#story">The Mark</a>
+      <a href="#platform">Be&nbsp;___</a>
+      <a href="#facts">DC Facts</a>
+      <a href="#shop">Shop</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+  <div class="container footer-fine">
+    <p>© <span id="year">2026</span> Be DC. B★DC is a trademark of Jaap Dekkinga. Not affiliated with the Government of the District of Columbia.</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
 </body>
 </html>

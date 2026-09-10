@@ -1,9 +1,11 @@
 name: Build and deploy static site to GitHub Pages (gh-pages)
 
+# Disabled by default. `static.yml` is the active deploy workflow (uploads the
+# repo root straight to Pages). This gh-pages/peaceiris variant is kept only as
+# a fallback and runs manually from the Actions tab, so the two don't race over
+# the same Pages deployment.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 # Need contents: write so the action can push to gh-pages branch using GITHUB_TOKEN
 permissions:

@@ -1,16 +1,72 @@
 [
   {
-    "id": "tshirt-black",
-    "title": "Be DC T-shirt (Black)",
-    "description": "Comfortable cotton t-shirt with Be DC print.",
-    "price": "19.99",
-    "currency": "EUR"
+    "id": "tshirt-white",
+    "slug": "tshirt-white",
+    "title": "B★DC T-Shirt — White",
+    "be": "Be seen",
+    "description": "Bella+Canvas 3001 cotton tee with the full-color B★DC mark. Printed to order.",
+    "dc_fact": "The DC flag's three stars and two bars are lifted straight from George Washington's family coat of arms.",
+    "price": "30.00",
+    "currency": "USD"
   },
   {
-    "id": "sticker-pack",
-    "title": "Sticker Pack",
-    "description": "Set of branded stickers.",
-    "price": "4.99",
-    "currency": "EUR"
+    "id": "tshirt-dark",
+    "slug": "tshirt-dark",
+    "title": "B★DC T-Shirt — Heather Grey",
+    "be": "Be everyday",
+    "description": "Bella+Canvas 3001 in heather grey with the B★DC mark. Printed to order.",
+    "dc_fact": "Washington, DC belongs to no state — the Constitution set it apart as its own federal district in 1790.",
+    "price": "30.00",
+    "currency": "USD"
+  },
+  {
+    "id": "hoodie",
+    "slug": "hoodie",
+    "title": "B★DC Hoodie",
+    "be": "Be warm",
+    "description": "Gildan 18500 pullover hoodie with the B★DC mark. Printed to order.",
+    "dc_fact": "At 555 feet, the Washington Monument was the tallest building in the world when it opened in 1884.",
+    "price": "52.00",
+    "currency": "USD"
+  },
+  {
+    "id": "polo",
+    "slug": "polo",
+    "title": "B★DC Polo",
+    "be": "Be sharp",
+    "description": "Embroidered B★DC polo. Printed to order.",
+    "dc_fact": "A federal height limit keeps DC's skyline low — the city has no skyscrapers by law.",
+    "price": "40.00",
+    "currency": "USD"
+  },
+  {
+    "id": "hat",
+    "slug": "hat",
+    "title": "B★DC Hat",
+    "be": "Be covered",
+    "description": "Structured twill cap with an embroidered B★DC mark.",
+    "dc_fact": "DC's street grid was laid out in 1791 by Pierre Charles L'Enfant, a French-born engineer in the Continental Army.",
+    "price": "28.00",
+    "currency": "USD"
+  },
+  {
+    "id": "tote",
+    "slug": "tote",
+    "title": "B★DC Tote Bag",
+    "be": "Be prepared",
+    "description": "Canvas tote with the B★DC mark. Printed to order.",
+    "dc_fact": "The Library of Congress is the largest library on earth, holding more than 170 million items.",
+    "price": "22.00",
+    "currency": "USD"
+  },
+  {
+    "id": "mug",
+    "slug": "mug",
+    "title": "B★DC Mug",
+    "be": "Be awake",
+    "description": "11oz ceramic mug with the B★DC mark.",
+    "dc_fact": "Rock Creek Park, right inside the city, is one of the oldest national parks in the country — established in 1890.",
+    "price": "16.00",
+    "currency": "USD"
   }
 ]
