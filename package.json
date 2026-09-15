@@ -1,0 +1,10 @@
+{
+  "name": "bdc-promotions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Be DC — single-page static storefront (no build step)",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo \"Static site — nothing to build\""
+  }
+}
