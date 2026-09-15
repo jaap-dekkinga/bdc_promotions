@@ -1,33 +1,131 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: CI/CD — Validate & Deploy
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-
+  pull_request:
+    branches: ["main"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  # Single deploy job since we're just deploying
+  # Runs on every push and PR. Catches broken JSON, broken JS, broken HTML,
+  # and asset references that point at files that don't exist before any of
+  # that ever reaches the live site.
+  validate:
+    name: Validate site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate data/products.json
+        run: |
+          python - <<'PY'
+          import json, sys
+
+          path = "data/products.json"
+          with open(path, encoding="utf-8") as f:
+              products = json.load(f)
+
+          if not isinstance(products, list):
+              sys.exit(f"{path}: expected a JSON array of products")
+
+          required = {"id", "slug", "title", "price", "currency"}
+          seen_ids, seen_slugs, errors = set(), set(), []
+
+          for i, p in enumerate(products):
+              missing = required - p.keys()
+              if missing:
+                  errors.append(f"product #{i} ({p.get('id', '?')}) missing fields: {sorted(missing)}")
+
+              pid, slug = p.get("id"), p.get("slug")
+              if pid in seen_ids:
+                  errors.append(f"duplicate id: {pid}")
+              seen_ids.add(pid)
+              if slug in seen_slugs:
+                  errors.append(f"duplicate slug: {slug}")
+              seen_slugs.add(slug)
+
+              try:
+                  float(p.get("price", ""))
+              except (TypeError, ValueError):
+                  errors.append(f"product {pid} has a non-numeric price: {p.get('price')!r}")
+
+          if errors:
+              print("\n".join(errors))
+              sys.exit(1)
+          print(f"OK: {len(products)} products validated in {path}")
+          PY
+
+      - name: Check Python scripts compile
+        run: python -m py_compile scripts/*.py
+
+      - name: Check JavaScript syntax
+        run: |
+          for f in $(find assets/js -name '*.js'); do
+            echo "Checking $f"
+            node --check "$f"
+          done
+
+      - name: Check that locally-referenced assets exist
+        run: |
+          python - <<'PY'
+          import re, sys, pathlib
+
+          html = pathlib.Path("index.html").read_text(encoding="utf-8")
+          paths = set(re.findall(r'(?:src|href)="(assets/[^"]+)"', html))
+          missing = [p for p in sorted(paths) if not pathlib.Path(p).exists()]
+
+          if missing:
+              print("Missing referenced assets:")
+              for m in missing:
+                  print(f"  - {m}")
+              sys.exit(1)
+          print(f"OK: {len(paths)} local asset references all resolve")
+          PY
+
+      - name: Validate HTML
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y tidy
+          output=$(tidy -q -e index.html 2>&1) || true
+          echo "$output"
+          if echo "$output" | grep -q "Error:"; then
+            echo "::error::HTML Tidy found structural errors in index.html"
+            exit 1
+          fi
+          echo "No structural HTML errors (any warnings above are informational)."
+
+  # Only runs after validate succeeds, and only for pushes to main (never
+  # for pull requests, and never if validation failed).
   deploy:
+    name: Deploy to GitHub Pages
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
