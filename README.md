@@ -28,10 +28,11 @@ on every push to `main`.
    Quick Store is set up. Any slug left `""` shows a **Notify me** button that routes
    to the contact form instead of a dead link, so the site is safe to publish before
    the store is ready.
-2. **Contact email** — the form opens the visitor's mail app addressed to
-   `hello@b-dc.org` (`assets/js/main.js`, search for `mailto:`). Swap in the address
-   you want to receive mail at, or wire it to a free formspree.io endpoint (second
-   TODO in the same file) so messages land quietly in an inbox.
+2. **Contact email** — done. The form and the footer link both point to
+   `bdcpromotions@gmail.com` (`assets/js/main.js`, search for `mailto:`, and
+   `index.html`). To change it again later, or to wire it to a free formspree.io
+   endpoint so messages land quietly in an inbox instead of opening Mail, see the
+   second TODO in `assets/js/main.js`.
 
 Keep `data/products.json` and the hard-coded cards in `index.html` in sync — the JSON
 is the catalog reference (`scripts/add_product.py` appends to it); the HTML is what

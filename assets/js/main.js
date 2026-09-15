@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var subject = encodeURIComponent('Message from Be DC site — ' + name);
       var body = encodeURIComponent(message + '\n\n— ' + name + ' (' + email + ')');
       // TODO: replace with your own contact address before launch.
-      window.location.href = 'mailto:hello@b-dc.org?subject=' + subject + '&body=' + body;
+      window.location.href = 'mailto:bdcpromotions@gmail.com?subject=' + subject + '&body=' + body;
       status.textContent = 'Opening your email app to send this…';
     });
   }
