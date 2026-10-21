@@ -9,14 +9,17 @@ anywhere here is a leaked token. This denies a tool call when:
     (Credential Manager "bdc-printful", $PRINTFUL_TOKEN, CredRead...), or to
     store a secret (`gh secret set`, `cmdkey /pass`): only Jaap does that.
     Listing the environment (`env`, `printenv`, `gci env:`) counts too;
-  - a file written outside scripts/printful_*.py and these hooks contains
-    code that reads the token (get_token(), CredRead, import printful_api).
+  - a code file other than the three Printful scripts and these hooks would
+    contain code that reads the token or writes to Printful (the client
+    module, the write flag, the credential reader). Docs and data files
+    may mention those names.
 Only scripts/printful_api.py reads the token, inside the printful_*.py scripts.
 `python .claude/hooks/guard_secrets.py scan` checks tracked files (CI).
 
 It can't catch a token that is split up or encoded on purpose.
 """
 import json
+import os
 import re
 import sys
 
@@ -30,18 +33,26 @@ TOKEN_PATTERNS = [
 # Reading, printing or storing the token. Merely naming it (docs, commit
 # messages, `env -u PRINTFUL_TOKEN`) is fine.
 READS_TOKEN = re.compile(
-    r"\$\{?PRINTFUL_TOKEN|\$env:PRINTFUL_TOKEN|env:\\?PRINTFUL|\bprintenv\b|\b(Get-ChildItem|gci|dir|ls)\s+env:"
-    r"|(^|[;&|(`]\s*)env\s*($|[|;&>])|GetEnvironmentVariable"
-    r"|(os\.environ|getenv)[^\n]*PRINTFUL_TOKEN|CredRead|Get-StoredCredential|\bvaultcmd\b"
-    r"|get_token|_token_from_credential_manager|(import|from)\s+printful_api\b"
+    r"\$\{?PRINTFUL_TOKEN|\$env:PRINTFUL_TOKEN|env:\\?PRINTFUL|\bprintenv\b"
+    r"|\b(Get-ChildItem|gci|dir|ls|Get-Item|gi)\s+(-Path\s+)?env:|(^|[;&|(`]\s*)(env|set|export\s+-p)\s*($|[|;&>])"
+    r"|GetEnvironmentVariable|dict\(\s*os\.environ|os\.environ\s*\)|process\.env\b"
+    r"|(os\.environ|getenv)[^\n]*PRINTFUL_TOKEN|Cred(Read|Enumerate)|Get-StoredCredential|\bvaultcmd\b|\bkeyring\b"
+    r"|get_token|_token_from_credential_manager|(import|from)\s+printful_api\b|printful_api\s+as\b|,\s*printful_api\b"
     r"|\bgh\s+secret\s+set\b|\bcmdkey\b[^\n]*(/pass|bdc-printful)",
     re.I | re.M,
 )
-# Code that reads the token may only live in the Printful scripts and these hooks.
-CODE_READS_TOKEN = re.compile(r"get_token\s*\(|_token_from_credential_manager|CredRead|(import|from)\s+printful_api\b")
-TOKEN_CODE_FILES = re.compile(r"(^|[/\\])(scripts[/\\]printful_\w+\.py|\.claude[/\\]hooks[/\\]\w+\.py)$")
+# Code that reads the token or writes to Printful may only live in the three
+# Printful scripts and these hooks (exact files in this repo, nothing else).
+CODE_READS_TOKEN = re.compile(
+    r"get_token|_token_from_credential_manager|Cred(Read|Enumerate)|\bkeyring\b|\bprintful_api\b|\ballow_write\b")
+PROSE_FILES = re.compile(r"\.(md|txt|json|csv|html|css|svg|ya?ml)$", re.I)
+ROOT = os.path.abspath(os.environ.get("CLAUDE_PROJECT_DIR")
+                       or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+TOKEN_CODE_FILES = {os.path.normcase(os.path.join(ROOT, *p)) for p in [
+    ("scripts", "printful_api.py"), ("scripts", "printful_sync.py"), ("scripts", "printful_create.py"),
+    (".claude", "hooks", "guard_secrets.py"), (".claude", "hooks", "require_approval.py")]}
 SHELL_TOOLS = {"Bash", "PowerShell"}
-WRITE_TOOLS = {"Write", "Edit", "NotebookEdit"}
+WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 
 def strings(value):
@@ -117,10 +128,11 @@ def main():
                  "or printful_create.py without mentioning it; only Jaap stores it.")
     if tool in WRITE_TOOLS and isinstance(tool_input, dict):
         path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
-        if not TOKEN_CODE_FILES.search(path):
+        if os.path.normcase(os.path.abspath(path)) not in TOKEN_CODE_FILES and not PROSE_FILES.search(path):
             for text in strings({k: v for k, v in tool_input.items() if k not in ("file_path", "notebook_path")}):
                 if CODE_READS_TOKEN.search(text):
-                    deny("Only scripts/printful_*.py may contain code that reads the Printful token.")
+                    deny("Only the three Printful scripts in scripts/ (and these hooks) may contain code "
+                         "that reads the token or writes to Printful.")
 
 
 if __name__ == "__main__":

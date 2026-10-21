@@ -30,7 +30,7 @@ If a check fails, fix the code. Never weaken or delete a CI check to make it pas
 ## Layout
 
 ```
-index.html                 the whole site: story, Be ___ platform, DC facts, shop (7 cards), contact
+index.html                 the whole site: story, Be ___ platform, DC facts, shop (generated cards), contact
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
 assets/img/                logo, hero and product images (binary; don't regenerate or rename)
@@ -70,7 +70,8 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 ## Things Claude gets wrong here
 
 - **Catalog drift:** the shop cards in `index.html` are generated from `data/products.json` between the `shop:start` / `shop:end` markers. Never edit them by hand: change the JSON and run `python scripts/render_shop.py` (CI fails if they differ). Only `status: "live"` products with a Be ___ phrase, a fact and an image are shown.
-- **Printful token:** never in the repo, a file, a command, chat or a log. GitHub uses the `PRINTFUL_TOKEN` repository secret (read-only scope `sync_products/read`); this PC uses Windows Credential Manager `bdc-printful` (write scope `sync_products`, for `printful_create.py`). Only `scripts/printful_api.py` reads it, and only Jaap stores or rotates it. `.claude/hooks/guard_secrets.py` denies token-like strings anywhere and commands that read the token; `require_approval.py` asks before any Printful write. If a token is ever pasted or committed, tell Jaap to revoke it at once.
+- **Printful token:** never in the repo, a file, a command, chat or a log. GitHub uses the `PRINTFUL_TOKEN` repository secret (read-only scope `sync_products/read`); this PC uses Windows Credential Manager `bdc-printful` (write scope `sync_products`, for `printful_create.py`). Only `scripts/printful_api.py` reads it, and only Jaap stores or rotates it. `.claude/hooks/guard_secrets.py` denies token-like strings anywhere, commands that read the token or list the environment, and token-reading code in any code file other than the three Printful scripts. `require_approval.py` asks before `printful_create.py --apply`, any shell command that names the Printful client, the write flag or `api.printful.com`, running any other `scripts/printful_*.py`, and any edit to the Printful scripts, `.claude/hooks/`, `.claude/settings*.json` or `.github/workflows/`. Both match text, so they stop mistakes, not a determined attacker. If a token is ever pasted or committed, tell Jaap to revoke it at once.
+- **Hook changes can lock the session.** The hooks fail closed: a hook that crashes blocks every tool call, including the edit that would fix it (it happened once, Jaap had to fix it by hand). Change a hook on a copy in the scratchpad, test it there with piped JSON, and only then copy it over the live file.
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
 - **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.

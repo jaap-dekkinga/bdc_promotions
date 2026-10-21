@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write        # push the printful-sync/<date> branch
+  contents: write        # push the printful-sync-bot branch
   pull-requests: write   # open or update the PR
   actions: write         # start the CI validate run on that branch
 
@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so "who committed to the sync branch" is answered correctly
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -71,13 +73,15 @@ jobs:
             exit 0
           fi
           # One rolling branch and PR, so an unmerged sync is updated instead of duplicated.
-          BRANCH="printful-sync"
+          # Only the bot commits to it; if anyone else did, stop rather than overwrite their work.
+          BRANCH="printful-sync-bot"
           BOT="41898282+github-actions[bot]@users.noreply.github.com"
-          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            git fetch --quiet origin "$BRANCH"   # a failed fetch fails the job instead of force-pushing blind
             OTHERS=$(git log --format=%ae "origin/main..FETCH_HEAD" | grep -vxF "$BOT" || true)
             if [ -n "$OTHERS" ]; then
-              echo "::warning::Someone else committed to $BRANCH. Not overwriting it; merge or close that PR and the next run starts fresh."
-              exit 0
+              echo "::error::Someone other than the bot committed to $BRANCH. Not overwriting it. Merge that PR, or delete the $BRANCH branch, and run the sync again."
+              exit 1
             fi
           fi
           git config user.name "github-actions[bot]"

@@ -1,5 +1,5 @@
-"""PreToolUse hook: Jaap must approve every email send, every deploy and
-every write to the Printful store.
+"""PreToolUse hook: Jaap must approve every email send, every deploy, every
+write to the Printful store, and every change to the files that guard them.
 
 Claude Code pipes the tool call as JSON on stdin. If the call would send an
 email, ship code to the live site or create/change a Printful product, this prints a permissionDecision of
@@ -39,14 +39,24 @@ DEPLOY_CMD = re.compile(
 DEPLOY_TOOL = re.compile(r"auto_merge|merge_pull_request|push_files|create_or_update_file|delete_file", re.I)
 
 # Creating or changing anything in the Printful store. Any shell command that
-# talks to the API directly is asked about (curl, Invoke-RestMethod, python
-# urllib...), because reads go through WebFetch or the printful_*.py scripts.
+# talks to the API directly or names the client is asked about (curl,
+# Invoke-RestMethod, python -c, runpy...), because reads go through WebFetch or
+# the two scripts. Running any other scripts/printful_*.py is asked about too.
 PRINTFUL_WRITE = re.compile(
-    r"printful_create(\.py)?\b[^\n]*\s--a"          # --apply, or any abbreviation of it
-    r"|api\.printful\.com"
-    r"|(import|from)\s+printful_api\b|printful_api\.(request|get_token|_token)",
+    r"printful_create(\.py)?\b[^\n]*--a"            # --apply, quoted or not, or any abbreviation
+    r"|\b(import|from|runpy|run_path|run_module)\b[^\n]*\bprintful_create\b"
+    r"|\bprintful_create\b[^\n]*\b(import|runpy|run_path|run_module)\b"
+    r"|api\.printful\.com|\bprintful_api\b|\ballow_write\b"
+    r"|scripts[/\\]printful_(?!sync\.py|create\.py)\w*\.py",
     re.I,
 )
+# Files that decide what Claude may do: changing them needs Jaap's OK.
+PROTECTED_FILES = re.compile(
+    r"(^|[/\\])(scripts[/\\]printful_\w*\.py|\.claude[/\\](hooks[/\\][^/\\]+|settings(\.local)?\.json)"
+    r"|\.github[/\\]workflows[/\\][^/\\]+)$",
+    re.I,
+)
+WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 # A command split over lines (\ in bash, ` in PowerShell) is matched as one line.
 CONTINUATION = re.compile(r"(\\|`)\r?\n")
 
@@ -75,6 +85,11 @@ def check(call):
     if PRINTFUL_WRITE.search(command):
         ask("Creating or changing a Printful product needs Jaap's OK. Check the dry-run payload first "
             "(hook: .claude/hooks/require_approval.py).")
+    if tool in WRITE_TOOLS and isinstance(tool_input, dict):
+        path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
+        if PROTECTED_FILES.search(path):
+            ask("Changing the Printful scripts, the hooks, Claude's settings or a workflow needs Jaap's OK "
+                "(hook: .claude/hooks/require_approval.py).")
     if DEPLOY_TOOL.search(tool) or DEPLOY_CMD.search(command):
         ask("Pushing, merging or running a workflow can deploy bedc.shop and needs Jaap's OK (hook: .claude/hooks/require_approval.py).")
 

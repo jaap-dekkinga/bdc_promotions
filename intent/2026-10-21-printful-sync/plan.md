@@ -9,7 +9,7 @@
 | `scripts/printful_create.py` | New. Validates a product draft JSON, prints the exact payload (dry run by default); with `--apply` calls `POST /store/products` with `external_id = slug`, then adds the product to `data/products.json` and re-renders the shop. |
 | `data/products.json` | Add `name`, `image`, `alt`, `status`, `printful_id` to the 7 products (display fields come from today's cards). |
 | `index.html` | Shop grid becomes generated output between markers. Visible change: none, except the Notify-me message now uses the product title. |
-| `.github/workflows/printful-sync.yml` | New. Daily + manual. Read-only token from `secrets.PRINTFUL_TOKEN`. If anything changed: branch `printful-sync/<date>`, PR to `main`, then dispatch `static.yml` on that branch so CI runs (PRs made with `GITHUB_TOKEN` don't trigger it). |
+| `.github/workflows/printful-sync.yml` | New. Daily + manual. Read-only token from `secrets.PRINTFUL_TOKEN`. If anything changed: one rolling branch `printful-sync-bot` (stops if anyone but the bot committed to it), PR to `main`, then dispatch `static.yml` on that branch so CI runs (PRs made with `GITHUB_TOKEN` don't trigger it). |
 | `.github/workflows/static.yml` | Validate job gets two more checks: shop cards match `products.json` (`render_shop.py --check`) and a secret scan of tracked files. Nothing removed. |
 | `.claude/agents/printful-product-creator.md` | New agent. |
 | `.claude/hooks/require_approval.py` | Ask before `printful_create.py --apply` and any write to `api.printful.com`. |

@@ -141,7 +141,7 @@ def request(method, path, body=None, token=None, auth=True, retries=4, allow_wri
         except urllib.error.HTTPError as err:
             if err.code == 429 and attempt < retries:
                 try:
-                    wait = min(int(err.headers.get("Retry-After") or 2 ** attempt), 60)
+                    wait = max(0, min(int(err.headers.get("Retry-After") or 2 ** attempt), 60))
                 except ValueError:  # an HTTP date instead of seconds
                     wait = 2 ** attempt
                 time.sleep(wait)
