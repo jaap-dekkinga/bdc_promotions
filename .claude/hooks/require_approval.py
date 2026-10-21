@@ -43,7 +43,7 @@ DEPLOY_TOOL = re.compile(r"auto_merge|merge_pull_request|push_files|create_or_up
 # Invoke-RestMethod, python -c, runpy...), because reads go through WebFetch or
 # the two scripts. Running any other scripts/printful_*.py is asked about too.
 PRINTFUL_WRITE = re.compile(
-    r"printful_create(\.py)?\b[^\n]*--a"            # --apply, quoted or not, or any abbreviation
+    r"printful_create(\.py)?\b[^\n]*--a"            # --apply, quoted or not
     r"|\b(import|from|runpy|run_path|run_module)\b[^\n]*\bprintful_create\b"
     r"|\bprintful_create\b[^\n]*\b(import|runpy|run_path|run_module)\b"
     r"|api\.printful\.com|\bprintful_api\b|\ballow_write\b"
@@ -57,6 +57,15 @@ PROTECTED_FILES = re.compile(
     re.I,
 )
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+# The create script and "apply" anywhere in one command, even on different lines.
+CREATE_AND_APPLY = re.compile(r"printful_create.*(--a|\bapply\b)", re.I | re.S)
+# Shell commands that change a protected file (the Write/Edit check can't see these).
+PROTECTED_IN_SHELL = re.compile(
+    r"scripts[/\\]printful_|\.claude[/\\](hooks|settings)|\.github[/\\]workflows", re.I)
+SHELL_WRITES = re.compile(
+    r">|\btee\b|\bsed\b[^\n]*\s-i|\b(Set|Add|Clear)-Content\b|\bOut-File\b|\b(cp|mv|rm|del|copy|move|ren)\b"
+    r"|\b(Copy|Move|Remove|Rename|New)-Item\b|\btruncate\b|\bgit\s+(checkout|restore|apply|reset|stash|mv|rm|am)\b"
+    r"|\bopen\s*\(|write_text|write_bytes|shutil\.", re.I)
 # A command split over lines (\ in bash, ` in PowerShell) is matched as one line.
 CONTINUATION = re.compile(r"(\\|`)\r?\n")
 
@@ -85,6 +94,12 @@ def check(call):
     if PRINTFUL_WRITE.search(command):
         ask("Creating or changing a Printful product needs Jaap's OK. Check the dry-run payload first "
             "(hook: .claude/hooks/require_approval.py).")
+    if CREATE_AND_APPLY.search(command):
+        ask("Creating a Printful product needs Jaap's OK. Check the dry-run payload first "
+            "(hook: .claude/hooks/require_approval.py).")
+    if PROTECTED_IN_SHELL.search(command) and SHELL_WRITES.search(command):
+        ask("This command may change the Printful scripts, the hooks, Claude's settings or a workflow, "
+            "which needs Jaap's OK (hook: .claude/hooks/require_approval.py).")
     if tool in WRITE_TOOLS and isinstance(tool_input, dict):
         path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
         if PROTECTED_FILES.search(path):

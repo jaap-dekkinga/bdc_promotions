@@ -57,6 +57,7 @@ _image_opener = urllib.request.build_opener(_PrintfulOnlyRedirect)
 
 
 def _token_from_credential_manager():
+    _require_entry_script("printful_sync.py", "printful_create.py")
     if sys.platform != "win32":
         return None
     import ctypes
@@ -95,7 +96,23 @@ def _token_from_credential_manager():
     return None
 
 
+def _require_entry_script(*allowed):
+    """Refuse unless the running program is one of these scripts in this folder.
+
+    The hooks match text, so an agent could still write its own file (any
+    extension) that imports this module. This check doesn't depend on text:
+    the token and writes are only available to the real sync/create scripts,
+    not to python -c, a copy, or a helper file."""
+    main = getattr(sys.modules.get("__main__"), "__file__", None) or ""
+    here = os.path.dirname(os.path.abspath(__file__))
+    ok = {os.path.normcase(os.path.join(here, name)) for name in allowed}
+    if not main or os.path.normcase(os.path.abspath(main)) not in ok:
+        raise PrintfulError("The Printful token can only be used by " + " or ".join(
+            f"scripts/{name}" for name in allowed) + ", run directly.")
+
+
 def get_token():
+    _require_entry_script("printful_sync.py", "printful_create.py")
     token = os.environ.get("PRINTFUL_TOKEN", "").strip() or _token_from_credential_manager()
     if not token:
         raise PrintfulError(
@@ -122,6 +139,8 @@ def request(method, path, body=None, token=None, auth=True, retries=4, allow_wri
         raise PrintfulError(f"bad API path: {path!r}")
     if method != "GET" and not allow_write:
         raise PrintfulError(f"{method} {path}: writes are only allowed from printful_create.py --apply")
+    if method != "GET":
+        _require_entry_script("printful_create.py")
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if auth:
         headers["Authorization"] = "Bearer " + (token or get_token())

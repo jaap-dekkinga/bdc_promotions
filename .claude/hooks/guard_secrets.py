@@ -12,7 +12,8 @@ anywhere here is a leaked token. This denies a tool call when:
   - a code file other than the three Printful scripts and these hooks would
     contain code that reads the token or writes to Printful (the client
     module, the write flag, the credential reader). Docs and data files
-    may mention those names.
+    may mention those names, but only in docs/, intent/, review-evals/,
+    .claude/agents/, .claude/skills/ and top-level *.md files.
 Only scripts/printful_api.py reads the token, inside the printful_*.py scripts.
 `python .claude/hooks/guard_secrets.py scan` checks tracked files (CI).
 
@@ -45,7 +46,7 @@ READS_TOKEN = re.compile(
 # Printful scripts and these hooks (exact files in this repo, nothing else).
 CODE_READS_TOKEN = re.compile(
     r"get_token|_token_from_credential_manager|Cred(Read|Enumerate)|\bkeyring\b|\bprintful_api\b|\ballow_write\b")
-PROSE_FILES = re.compile(r"\.(md|txt|json|csv|html|css|svg|ya?ml)$", re.I)
+PROSE_DIRS = [("docs",), ("intent",), ("review-evals",), (".claude", "agents"), (".claude", "skills")]
 ROOT = os.path.abspath(os.environ.get("CLAUDE_PROJECT_DIR")
                        or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 TOKEN_CODE_FILES = {os.path.normcase(os.path.join(ROOT, *p)) for p in [
@@ -53,6 +54,20 @@ TOKEN_CODE_FILES = {os.path.normcase(os.path.join(ROOT, *p)) for p in [
     (".claude", "hooks", "guard_secrets.py"), (".claude", "hooks", "require_approval.py")]}
 SHELL_TOOLS = {"Bash", "PowerShell"}
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+
+
+def is_prose(path):
+    """Docs may mention the client and the token functions. Exempt by place, not by
+    extension: Python runs a file whatever it's called."""
+    full = os.path.normcase(os.path.abspath(path))
+    root = os.path.normcase(ROOT)
+    if os.path.dirname(full) == root and full.endswith(".md"):
+        return True
+    return any(full.startswith(os.path.normcase(os.path.join(ROOT, *d)) + os.sep) for d in PROSE_DIRS)
+
+
+# Writing code that runs the create script with --apply is the same as running it.
+RUNS_CREATE_APPLY = re.compile(r"printful_create.*(--a|['\"]apply|\bapply\b)", re.I | re.S)
 
 
 def strings(value):
@@ -128,9 +143,9 @@ def main():
                  "or printful_create.py without mentioning it; only Jaap stores it.")
     if tool in WRITE_TOOLS and isinstance(tool_input, dict):
         path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
-        if os.path.normcase(os.path.abspath(path)) not in TOKEN_CODE_FILES and not PROSE_FILES.search(path):
+        if os.path.normcase(os.path.abspath(path)) not in TOKEN_CODE_FILES and not is_prose(path):
             for text in strings({k: v for k, v in tool_input.items() if k not in ("file_path", "notebook_path")}):
-                if CODE_READS_TOKEN.search(text):
+                if CODE_READS_TOKEN.search(text) or RUNS_CREATE_APPLY.search(text):
                     deny("Only the three Printful scripts in scripts/ (and these hooks) may contain code "
                          "that reads the token or writes to Printful.")
 
