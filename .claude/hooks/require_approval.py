@@ -1,7 +1,8 @@
-"""PreToolUse hook: Jaap must approve every email send and every deploy.
+"""PreToolUse hook: Jaap must approve every email send, every deploy and
+every write to the Printful store.
 
 Claude Code pipes the tool call as JSON on stdin. If the call would send an
-email or ship code to the live site, this prints a permissionDecision of
+email, ship code to the live site or create/change a Printful product, this prints a permissionDecision of
 "ask", so Claude Code stops and asks Jaap even in auto mode or a scheduled
 run. Everything else passes through untouched (no output, exit 0).
 If the input can't be read, it asks too: this hook fails closed.
@@ -37,6 +38,14 @@ DEPLOY_CMD = re.compile(
 )
 DEPLOY_TOOL = re.compile(r"auto_merge|merge_pull_request|push_files|create_or_update_file|delete_file", re.I)
 
+# Creating or changing anything in the Printful store.
+PRINTFUL_WRITE = re.compile(
+    r"printful_create\.py\b[^\n]*--apply"
+    r"|api\.printful\.com[^\n]*(-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DELETE)|--data|\s-d\s)"
+    r"|(-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DELETE)|--data|\s-d\s)[^\n]*api\.printful\.com",
+    re.I,
+)
+
 
 def ask(reason):
     print(json.dumps({
@@ -59,6 +68,9 @@ def check(call):
 
     if EMAIL_TOOL.search(tool) or EMAIL_CMD.search(command):
         ask("Sending email needs Jaap's OK (hook: .claude/hooks/require_approval.py). Drafts are fine; sending is not.")
+    if PRINTFUL_WRITE.search(command):
+        ask("Creating or changing a Printful product needs Jaap's OK. Check the dry-run payload first "
+            "(hook: .claude/hooks/require_approval.py).")
     if DEPLOY_TOOL.search(tool) or DEPLOY_CMD.search(command):
         ask("Pushing, merging or running a workflow can deploy bedc.shop and needs Jaap's OK (hook: .claude/hooks/require_approval.py).")
 

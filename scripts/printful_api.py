@@ -1,0 +1,157 @@
+"""Minimal Printful API client for the Be DC scripts (standard library only).
+
+Where the token comes from, in order:
+  1. the PRINTFUL_TOKEN environment variable (GitHub Actions secret), or
+  2. Windows Credential Manager, generic credential "bdc-printful"
+     (add it yourself with:  cmdkey /generic:bdc-printful /user:printful /pass
+      and paste the token at the prompt, so it never lands in shell history).
+
+The token is only ever put in the Authorization header. It is never printed,
+logged, written to a file, or included in an error message.
+Set PRINTFUL_STORE_ID (not secret) only if you use an account-level token.
+"""
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+API = "https://api.printful.com"
+CREDENTIAL_TARGET = "bdc-printful"
+USER_AGENT = "bdc-printful-scripts/1.0"
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
+IMAGE_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+
+
+class PrintfulError(Exception):
+    pass
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """urllib copies the Authorization header to redirect targets, even on
+    another host. API calls never follow redirects, so the token can't leak."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_api_opener = urllib.request.build_opener(_NoRedirect)
+
+
+def _token_from_credential_manager():
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    from ctypes import wintypes
+
+    class CREDENTIAL(ctypes.Structure):
+        _fields_ = [
+            ("Flags", wintypes.DWORD), ("Type", wintypes.DWORD),
+            ("TargetName", wintypes.LPWSTR), ("Comment", wintypes.LPWSTR),
+            ("LastWritten", wintypes.FILETIME), ("CredentialBlobSize", wintypes.DWORD),
+            ("CredentialBlob", ctypes.POINTER(ctypes.c_ubyte)), ("Persist", wintypes.DWORD),
+            ("AttributeCount", wintypes.DWORD), ("Attributes", ctypes.c_void_p),
+            ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
+        ]
+
+    advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
+    advapi32.CredReadW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                   ctypes.POINTER(ctypes.POINTER(CREDENTIAL))]
+    advapi32.CredReadW.restype = wintypes.BOOL
+    advapi32.CredFree.argtypes = [ctypes.c_void_p]
+    cred = ctypes.POINTER(CREDENTIAL)()
+    if not advapi32.CredReadW(CREDENTIAL_TARGET, 1, 0, ctypes.byref(cred)):  # 1 = generic
+        return None
+    try:
+        blob = ctypes.string_at(cred.contents.CredentialBlob, cred.contents.CredentialBlobSize)
+    finally:
+        advapi32.CredFree(cred)
+    # cmdkey stores the secret as UTF-16; other tools may use UTF-8.
+    for encoding in ("utf-16-le", "utf-8"):
+        try:
+            text = blob.decode(encoding).strip()
+        except UnicodeDecodeError:
+            continue
+        if text.isascii() and text.isprintable():
+            return text
+    return None
+
+
+def get_token():
+    token = os.environ.get("PRINTFUL_TOKEN", "").strip() or _token_from_credential_manager()
+    if not token:
+        raise PrintfulError(
+            "No Printful token found. In GitHub: set the PRINTFUL_TOKEN repository secret. "
+            f"On this PC: run  cmdkey /generic:{CREDENTIAL_TARGET} /user:printful /pass  "
+            "and paste the token at the prompt.")
+    return token
+
+
+def _error_message(err):
+    try:
+        data = json.loads(err.read().decode("utf-8"))
+        return (data.get("error") or {}).get("message") or data.get("result") or err.reason
+    except (ValueError, AttributeError, UnicodeDecodeError):
+        return err.reason
+
+
+def request(method, path, body=None, token=None, auth=True, retries=4):
+    """Call the Printful API and return the "result" part of the response."""
+    if not path.startswith("/"):
+        raise PrintfulError(f"bad API path: {path!r}")
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    if auth:
+        headers["Authorization"] = "Bearer " + (token or get_token())
+        store_id = os.environ.get("PRINTFUL_STORE_ID", "").strip()
+        if store_id:
+            headers["X-PF-Store-Id"] = store_id
+    data = None
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    for attempt in range(retries + 1):
+        req = urllib.request.Request(API + path, data=data, headers=headers, method=method)
+        try:
+            with _api_opener.open(req, timeout=30) as resp:
+                return json.loads(resp.read().decode("utf-8")).get("result")
+        except urllib.error.HTTPError as err:
+            if err.code == 429 and attempt < retries:
+                wait = min(int(err.headers.get("Retry-After") or 2 ** attempt), 60)
+                time.sleep(wait)
+                continue
+            raise PrintfulError(f"{method} {path}: HTTP {err.code}: {_error_message(err)}") from None
+        except urllib.error.URLError as err:
+            raise PrintfulError(f"{method} {path}: {err.reason}") from None
+
+
+def list_store_products(token):
+    products, offset = [], 0
+    while True:
+        page = request("GET", f"/store/products?offset={offset}&limit=100", token=token) or []
+        products.extend(page)
+        if len(page) < 100:
+            return products
+        offset += 100
+
+
+def download_image(url, dest_without_ext):
+    """Download a Printful image (https, *.printful.com only). Returns the saved path."""
+    parts = urllib.parse.urlparse(url or "")
+    host = parts.hostname or ""
+    if parts.scheme != "https" or not (host == "printful.com" or host.endswith(".printful.com")):
+        raise PrintfulError(f"refusing to download image from {host or 'an empty URL'}")
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        ext = IMAGE_TYPES.get(resp.headers.get_content_type())
+        if not ext:
+            raise PrintfulError(f"not a JPEG/PNG/WebP image: {url}")
+        content = resp.read(MAX_IMAGE_BYTES + 1)
+    if len(content) > MAX_IMAGE_BYTES:
+        raise PrintfulError(f"image over {MAX_IMAGE_BYTES // 1024 // 1024} MB: {url}")
+    path = str(dest_without_ext) + ext
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb") as f:
+        f.write(content)
+    return path

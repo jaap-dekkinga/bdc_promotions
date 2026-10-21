@@ -11,11 +11,15 @@ Merch is print-on-demand through Printful. There is no cart, checkout or backend
 | Serve locally | `npm start` (= `npx serve .`) | `Serving!` on http://localhost:3000 |
 | Check catalog JSON | `python -m json.tool data/products.json > /dev/null` | no output, exit 0 |
 | Check JS syntax | `node --check assets/js/main.js` | no output, exit 0 |
-| Check Python | `python -m py_compile scripts/add_product.py` | no output, exit 0 |
-| Add a product | `python scripts/add_product.py --id … --title … --price … --be "Be …" --fact "…"` | `Saved N products to data/products.json` |
+| Check Python | `python -m py_compile scripts/*.py .claude/hooks/*.py` | no output, exit 0 |
+| Check shop cards | `python scripts/render_shop.py --check` | `OK: shop shows N of N products, in sync…` |
+| Check for secrets | `python .claude/hooks/guard_secrets.py scan` | `OK: no token-like strings in N tracked files` |
+| Add a product (local only) | `python scripts/add_product.py --id … --title … --name … --price … --be "Be …" --fact "…" --image assets/img/… --alt …` | `Saved N products…`, then `Rendered N of N products…` |
+| New product in Printful | `printful-product-creator` agent → `python scripts/printful_create.py <draft.json>` (dry run); `--apply` only after Jaap's OK | payload printed / `Created Printful product …` |
+| Pull from Printful | GitHub → Actions → **Printful sync** → Run workflow (it also runs daily) | a `Printful sync <date>` PR, or "nothing to do" |
 
 CI (`static.yml` → `validate` job) also checks: required product fields, unique ids/slugs, numeric prices,
-that every `assets/…` path in `index.html` exists, and HTML Tidy has no `Error:` lines. Deploy runs only if validate passes.
+that every `assets/…` path in `index.html` exists, that the shop cards match `data/products.json`, that no tracked file contains a token-like string, and HTML Tidy has no `Error:` lines. Deploy runs only if validate passes.
 
 ## Definition of done
 
@@ -31,7 +35,11 @@ assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
 assets/img/                logo, hero and product images (binary; don't regenerate or rename)
 data/products.json         catalog reference (7 SKUs, USD)
-scripts/add_product.py     appends to products.json
+scripts/add_product.py     appends to products.json and re-renders the shop
+scripts/render_shop.py     generates the shop cards in index.html from products.json
+scripts/printful_sync.py   pulls the Printful store (run by .github/workflows/printful-sync.yml)
+scripts/printful_create.py creates one Printful product from a draft (dry run unless --apply)
+scripts/printful_api.py    Printful client; the only code that reads the token
 product-pricing-sheet.md   cost / retail / margin per SKU (private numbers; repo is public)
 intent/                    intent.md → spec.md → plan.md per change (see docs/ai-native-workflow.md)
 .claude/skills/            be-dc-brand, add-product, apparel-storefront-ux, web-accessibility, site-screenshots,
@@ -42,6 +50,7 @@ intent/                    intent.md → spec.md → plan.md per change (see doc
 .claude/agents/site-improver.md live health + SEO/sharing check, turns top findings into intent.md drafts
 .claude/agents/marketing-planner.md $0 marketing: 2-week content calendar + ranked to-dos (in ../bdc-growth/)
 .claude/agents/collaborator-outreach.md finds DC collaborators, writes Gmail drafts (never sends)
+.claude/agents/printful-product-creator.md drafts a product; creates it in Printful only after Jaap's OK
 ../bdc-growth/             PRIVATE, outside the repo: prospects.csv, outreach-log.md, content-calendar.md, reports/
 REVIEW.md                  review policy (what failure looks like, tags, round cap)
 docs/code-review-process.md  review layers, risk tiers, eval + noise loop
@@ -60,7 +69,8 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 
 ## Things Claude gets wrong here
 
-- **Catalog drift:** `index.html` hard-codes the 7 product cards. Editing `products.json` alone changes nothing on the site. Change both (use the `add-product` skill).
+- **Catalog drift:** the shop cards in `index.html` are generated from `data/products.json` between the `shop:start` / `shop:end` markers. Never edit them by hand: change the JSON and run `python scripts/render_shop.py` (CI fails if they differ). Only `status: "live"` products with a Be ___ phrase, a fact and an image are shown.
+- **Printful token:** never in the repo, a file, a command, chat or a log. GitHub uses the `PRINTFUL_TOKEN` repository secret (read-only scope `sync_products/read`); this PC uses Windows Credential Manager `bdc-printful` (write scope `sync_products`, for `printful_create.py`). Only `scripts/printful_api.py` reads it, and only Jaap stores or rotates it. `.claude/hooks/guard_secrets.py` denies token-like strings anywhere and commands that read the token; `require_approval.py` asks before any Printful write. If a token is ever pasted or committed, tell Jaap to revoke it at once.
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
 - **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.

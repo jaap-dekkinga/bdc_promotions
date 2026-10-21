@@ -97,6 +97,12 @@ jobs:
           print(f"OK: {len(paths)} local asset references all resolve")
           PY
 
+      - name: Check shop cards match data/products.json
+        run: python scripts/render_shop.py --check
+
+      - name: Check no secrets are committed
+        run: python .claude/hooks/guard_secrets.py scan
+
       - name: Validate HTML
         run: |
           sudo apt-get update -qq
