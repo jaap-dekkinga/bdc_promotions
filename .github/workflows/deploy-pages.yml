@@ -1,7 +1,7 @@
 name: Build and deploy static site to GitHub Pages (gh-pages)
 
-# Disabled by default. `static.yml` is the active deploy workflow (uploads the
-# repo root straight to Pages). This gh-pages/peaceiris variant is kept only as
+# Disabled by default. `static.yml` is the active deploy workflow (uploads
+# index.html + assets/ to Pages). This gh-pages/peaceiris variant is kept only as
 # a fallback and runs manually from the Actions tab, so the two don't race over
 # the same Pages deployment.
 on:
@@ -23,8 +23,10 @@ jobs:
         run: |
           rm -rf public || true
           mkdir public
-          # Copy site files to public, excluding git metadata and workflow files
-          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' --exclude='README.md' ./ public/
+          # Copy only the storefront, same list as static.yml
+          cp index.html public/
+          cp -r assets public/
+          if [ -f CNAME ]; then cp CNAME public/; fi
 
       - name: Show public contents (debug)
         run: |

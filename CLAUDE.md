@@ -1,0 +1,72 @@
+# CLAUDE.md — Be DC storefront (`bdc_promotions`)
+
+Single-page static storefront for **B★DC**, Washington, DC's city logo and motto. Owner: Jaap Dekkinga.
+No framework, no build step. Deploys to GitHub Pages from `main` via `.github/workflows/static.yml`.
+Merch is print-on-demand through Printful. There is no cart, checkout or backend in this repo, and there shouldn't be one.
+
+## Commands
+
+| What | Command | Healthy output |
+|---|---|---|
+| Serve locally | `npm start` (= `npx serve .`) | `Serving!` on http://localhost:3000 |
+| Check catalog JSON | `python -m json.tool data/products.json > /dev/null` | no output, exit 0 |
+| Check JS syntax | `node --check assets/js/main.js` | no output, exit 0 |
+| Check Python | `python -m py_compile scripts/add_product.py` | no output, exit 0 |
+| Add a product | `python scripts/add_product.py --id … --title … --price … --be "Be …" --fact "…"` | `Saved N products to data/products.json` |
+
+CI (`static.yml` → `validate` job) also checks: required product fields, unique ids/slugs, numeric prices,
+that every `assets/…` path in `index.html` exists, and HTML Tidy has no `Error:` lines. Deploy runs only if validate passes.
+
+## Definition of done
+
+Before saying a change is finished, run every check above that applies and paste the output.
+If you changed anything visible, open the page (local server + browser or screenshot) and look at it at desktop and phone width.
+If a check fails, fix the code. Never weaken or delete a CI check to make it pass.
+
+## Layout
+
+```
+index.html                 the whole site: story, Be ___ platform, DC facts, shop (7 cards), contact
+assets/css/style.css       brand styles
+assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
+assets/img/                logo, hero and product images (binary; don't regenerate or rename)
+data/products.json         catalog reference (7 SKUs, USD)
+scripts/add_product.py     appends to products.json
+product-pricing-sheet.md   blank cost / retail / margin per SKU
+intent/                    intent.md → spec.md → plan.md per change (see docs/ai-native-workflow.md)
+.claude/skills/            be-dc-brand, add-product, apparel-storefront-ux, web-accessibility, site-screenshots,
+                           free-marketing, partner-outreach
+.claude/agents/verifier.md report-only check before "done"
+.claude/agents/code-reviewer.md read-only bug + readability review before a PR
+.claude/agents/ui-ux-designer.md read-only UX/UI, accessibility and conversion review for visible changes
+.claude/agents/site-improver.md live health + SEO/sharing check, turns top findings into intent.md drafts
+.claude/agents/marketing-planner.md $0 marketing: 2-week content calendar + ranked to-dos (in ../bdc-growth/)
+.claude/agents/collaborator-outreach.md finds DC collaborators, writes Gmail drafts (never sends)
+../bdc-growth/             PRIVATE, outside the repo: prospects.csv, outreach-log.md, content-calendar.md, reports/
+REVIEW.md                  review policy (what failure looks like, tags, round cap)
+docs/code-review-process.md  review layers, risk tiers, eval + noise loop
+review-evals/              planted-bug cases for the reviewer + finding outcomes log
+.github/pull_request_template.md  Testing / Risk tier / How to revert
+```
+
+## Conventions
+
+- Brand: navy `#002664`, red `#BB133E`, white. Big Shoulders Display (headlines), Inter (body), IBM Plex Mono (labels/data). Use the `be-dc-brand` skill for anything visible.
+- Write the mark as **B★DC** (with the star) in copy; "Be DC" when spoken/motto. Never "BDC" in customer-facing text.
+- Every product has a `Be ___` phrase and one DC fact. Facts must be true today or clearly framed as the 2010 research that started the project.
+- Prices in `index.html`, `data/products.json` and `product-pricing-sheet.md` must match. Change all three together.
+- Plain HTML/CSS/vanilla JS. No frameworks, bundlers or npm dependencies beyond `serve`.
+- Contact goes to `bdcpromotions@gmail.com` (mailto in `main.js` and footer in `index.html`).
+
+## Things Claude gets wrong here
+
+- **Catalog drift:** `index.html` hard-codes the 7 product cards. Editing `products.json` alone changes nothing on the site. Change both (use the `add-product` skill).
+- **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
+- **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
+- **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.
+- **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools/commands and for `git push`, `gh pr merge`, `gh workflow run` and auto-merge, even in auto mode. Gmail *drafts* are fine. Don't weaken or bypass the hook.
+- **Marketing and outreach output is private.** Prospect lists, contact names, email drafts, content calendars and reports go in `../bdc-growth/`, never in this repo. Agents draft; Jaap sends emails and publishes posts.
+- **Trademark:** the US application (serial 99376168) is pending. Don't add ® anywhere. Don't make legal claims about the mark.
+- **Don't add tracking scripts, cookie banners, or third-party embeds** without an intent that says so.
+
+When Claude makes the same mistake twice, add the correction to this list.
