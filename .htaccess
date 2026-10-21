@@ -12,12 +12,18 @@ DirectoryIndex index.html
 
 RewriteEngine On
 
+# No path tricks: "..", "%2e" or "%2f" in the raw request path (not the
+# query string) could otherwise reach a private file through ^assets/.
+RewriteCond %{THE_REQUEST} ^\S+\s[^?\s]*(\.\.|%2e|%2f) [NC]
+RewriteRule ^ - [R=404,L]
+
 # The storefront
 RewriteRule ^$ - [L]
 RewriteRule ^index\.html$ - [L]
 RewriteRule ^assets/ - [L]
 
-# The host's SSL certificate renewals (Let's Encrypt) need this path
+# SSL renewals: Hostinger's edge answers these today, but keep the path
+# open in case a renewal ever goes through to the site folder
 RewriteRule ^\.well-known/acme-challenge/ - [L]
 
 # Everything else

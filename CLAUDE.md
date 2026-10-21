@@ -26,6 +26,7 @@ If a check fails, fix the code. Never weaken or delete a CI check to make it pas
 ## Layout
 
 ```
+.htaccess                  bedc.shop allowlist: only /, index.html, assets/ (keep in step with static.yml)
 index.html                 the whole site: story, Be ___ platform, DC facts, shop (7 cards), contact
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
@@ -63,7 +64,7 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 - **Catalog drift:** `index.html` hard-codes the 7 product cards. Editing `products.json` alone changes nothing on the site. Change both (use the `add-product` skill).
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
-- **bedc.shop is not GitHub Pages.** It's a separate host (`Server: hcdn`, probably Hostinger) that pulls the whole repo on every push to `main`. `.htaccess` makes it serve only `index.html`, `assets/` and `.well-known/acme-challenge/`. `static.yml` deploys the GitHub Pages copy (`jaap-dekkinga.github.io/bdc_promotions/`). Change both allowlists together.
+- **bedc.shop is not GitHub Pages.** It is Hostinger (hPanel Git deploy; responses carry `platform: hostinger` and `Server: hcdn`), which pulls `main` into the site folder. `.htaccess` makes it serve only `index.html`, `assets/` and `.well-known/acme-challenge/`. `static.yml` deploys the GitHub Pages copy (`jaap-dekkinga.github.io/bdc_promotions/`). Change both allowlists together.
 - **The GitHub repo is public.** The deploys publish only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml` and to `.htaccess`.
 - **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools and commands (including SMTP) and for any `git push`, `gh pr merge`, `gh workflow run`, GitHub API merges/ref/content writes and auto-merge, even in auto mode. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
 - **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (one file per run in `.git/claude-reviews/`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.

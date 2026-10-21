@@ -4,8 +4,8 @@ A single-page static site for **B★DC**, Washington, DC's first city logo and m
 the story of the mark, the "Be ___" platform, the DC facts that started the project
 in 2010, a seven-piece print-on-demand starter shop, and a contact form.
 
-No framework, no build step — just `index.html` + `assets/`. Deploys to GitHub Pages
-on every push to `main`.
+No framework, no build step — just `index.html` + `assets/`. Live at https://bedc.shop
+(Hostinger, which pulls `main`); a copy also deploys to GitHub Pages on every push to `main`.
 
 ## What's real vs. placeholder
 
@@ -38,17 +38,17 @@ Keep `data/products.json` and the hard-coded cards in `index.html` in sync — t
 is the catalog reference (`scripts/add_product.py` appends to it); the HTML is what
 actually renders.
 
-## Deploying (GitHub Pages, $0/month)
+## Deploying
 
-`.github/workflows/static.yml` runs on every push to `main`: it uploads the repo root
-and deploys it to GitHub Pages. Nothing to configure beyond **Settings → Pages →
-Source: GitHub Actions**.
-
-- `deploy-pages.yml` is the older gh-pages/peaceiris variant, now set to manual
-  (`workflow_dispatch`) only so the two workflows don't race over the same
-  deployment. Use one or the other, not both on push.
-- To serve the site at `b-dc.org`, add a `CNAME` file at the repo root containing
-  `b-dc.org` and point a DNS `CNAME` record at the Pages address.
+- **bedc.shop (live):** Hostinger (hPanel Git deploy) pulls `main` into the site folder.
+  The root `.htaccess` makes it serve only `/`, `index.html` and `assets/`; every other
+  repo file returns 404 there.
+- **GitHub Pages copy:** `.github/workflows/static.yml` validates every push and PR, and on
+  `main` copies `index.html` + `assets/` into `_site` and deploys that to
+  `jaap-dekkinga.github.io/bdc_promotions/`.
+- Keep the two allowlists (`.htaccess` and the "Collect storefront files" step) in step.
+- `deploy-pages.yml` is the older gh-pages/peaceiris variant, set to manual
+  (`workflow_dispatch`) only so the two workflows don't race over the same deployment.
 
 ## Files
 
@@ -59,6 +59,7 @@ assets/js/main.js            nav toggle, Printful link config, contact form
 assets/img/                  real logo, hero, and product images
 data/products.json           catalog reference for the 7 starter SKUs (USD)
 scripts/add_product.py       append a product to data/products.json
-product-pricing-sheet.md     SKU blank costs, retail prices, and margins for Printful
-.github/workflows/static.yml active GitHub Pages deploy
+product-pricing-sheet.md     SKU costs, retail prices, and margins for Printful (private numbers)
+.github/workflows/static.yml CI validate + GitHub Pages copy
+.htaccess                    bedc.shop allowlist (only index.html, assets/)
 ```
