@@ -5,7 +5,7 @@ CLAUDE.md and docs/code-review-process.md ask for the `verifier` and
 
   record  (PostToolUse on Agent): when Claude starts a verifier or
           code-reviewer subagent, append {branch, agent, time} to
-          .git/claude-reviews.jsonl (inside .git, so never committed or
+          .git/claude-reviews/ (one file per run, inside .git, so never committed or
           published).
   check   (PreToolUse on Bash/PowerShell): on `gh pr create` or
           `gh pr ready`, deny unless both agents were recorded for the
@@ -16,6 +16,7 @@ Limits: it sees that a review was started, not that its findings were
 fixed, and it can't see the app's own "Create PR" button.
 """
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -32,9 +33,25 @@ def git(*args):
     return out.stdout.strip()
 
 
-def log_path():
+def log_dir():
     git_dir = git("rev-parse", "--absolute-git-dir")
-    return pathlib.Path(git_dir) / "claude-reviews.jsonl" if git_dir else None
+    return pathlib.Path(git_dir) / "claude-reviews" if git_dir else None
+
+
+def recorded(branch):
+    """Agents recorded for a branch. One file per run, because parallel
+    subagents appending to one file on Windows can overwrite each other."""
+    ran = set()
+    path = log_dir()
+    if path and path.is_dir():
+        for f in path.glob("*.json"):
+            try:
+                entry = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if entry.get("branch") == branch:
+                ran.add(entry.get("agent"))
+    return ran
 
 
 def which_agent(tool_input):
@@ -49,13 +66,14 @@ def which_agent(tool_input):
 def record(call):
     if call.get("tool_name") not in ("Agent", "Task"):
         return
-    name = which_agent(call.get("tool_input") or {})
-    path = log_path()
+    tool_input = call.get("tool_input")
+    name = which_agent(tool_input if isinstance(tool_input, dict) else {})
+    path = log_dir()
     if not name or not path:
         return
     entry = {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "agent": name, "time": int(time.time())}
-    with path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(entry) + "\n")
+    path.mkdir(exist_ok=True)
+    (path / f"{name}-{time.time_ns()}-{os.getpid()}.json").write_text(json.dumps(entry), encoding="utf-8")
 
 
 def deny(reason):
@@ -88,16 +106,7 @@ def check(call):
     head = re.search(r"--head[= ]+(\S+)", command)
     branch = head.group(1) if head else git("rev-parse", "--abbrev-ref", "HEAD")
 
-    ran = set()
-    path = log_path()
-    if path and path.exists():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            try:
-                entry = json.loads(line)
-            except ValueError:
-                continue
-            if entry.get("branch") == branch:
-                ran.add(entry.get("agent"))
+    ran = recorded(branch)
     missing = [a for a in AGENTS if a not in ran]
     if missing:
         deny(f"No PR yet: run the {' and '.join(missing)} subagent(s) on branch '{branch}' first "
