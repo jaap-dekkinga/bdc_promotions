@@ -34,3 +34,8 @@ Internal files stay in the repo for Jaap and Claude but return 404 on the live s
 - [ ] Is anything already linking to the public `README.md` or pricing sheet? (Assume no.)
 - [ ] Copy-to-a-`_site`-folder step, or move the site files into a `site/` folder in the repo?
 - [ ] Should `deploy-pages.yml` (manual fallback) get the same fix or be deleted?
+
+## Update 2026-10-21
+- The `_site` change (PR #1) fixed the GitHub Pages copy, but **bedc.shop is Hostinger** (hPanel Git deploy of `main`), not GitHub Pages, so the files stayed public there.
+- Follow-up: a root `.htaccess` allowlist (branch `htaccess-allowlist`) makes bedc.shop serve only `/`, `index.html` and `assets/`.
+- The pricing sheet's costs stay readable in the public GitHub repo and its history; removing them from the repo would be a separate intent.

@@ -1,7 +1,7 @@
 # CLAUDE.md — Be DC storefront (`bdc_promotions`)
 
 Single-page static storefront for **B★DC**, Washington, DC's city logo and motto. Owner: Jaap Dekkinga.
-No framework, no build step. Deploys to GitHub Pages from `main` via `.github/workflows/static.yml`.
+No framework, no build step. Live at https://bedc.shop (a host that pulls `main`; `.htaccess` limits what it serves). `.github/workflows/static.yml` validates every push and deploys the GitHub Pages copy from `main`.
 Merch is print-on-demand through Printful. There is no cart, checkout or backend in this repo, and there shouldn't be one.
 
 ## Commands
@@ -30,6 +30,7 @@ If a check fails, fix the code. Never weaken or delete a CI check to make it pas
 ## Layout
 
 ```
+.htaccess                  bedc.shop allowlist: only /, index.html, assets/ (+ ACME path); keep in step with static.yml
 index.html                 the whole site: story, Be ___ platform, DC facts, shop (generated cards), contact
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
@@ -74,9 +75,10 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 - **Hook changes can lock the session.** The hooks fail closed: a hook that crashes blocks every tool call, including the edit that would fix it (it happened once, Jaap had to fix it by hand). Change a hook on a copy in the scratchpad, test it there with piped JSON, and only then copy it over the live file.
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
-- **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.
+- **bedc.shop is not GitHub Pages.** It is Hostinger (hPanel Git deploy; responses carry `platform: hostinger` and `Server: hcdn`), which pulls `main` into the site folder. `.htaccess` makes it serve only `index.html`, `assets/` and `.well-known/acme-challenge/`. `static.yml` deploys the GitHub Pages copy (`jaap-dekkinga.github.io/bdc_promotions/`). Change both allowlists together.
+- **The GitHub repo is public.** The deploys publish only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml` and to `.htaccess`.
 - **Jaap approves every email send, every deploy and every new Printful product, and nothing else.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call. It asks for mail-send tools and commands (including SMTP); for anything that changes `main`, which bedc.shop deploys from (a push to `main`, or a push while on `main`; `gh pr merge`; `gh workflow run`; GitHub API merges/ref/content writes; auto-merge); and for `printful_create.py --apply`. Pushing a feature branch, editing files and running checks don't ask: Jaap doesn't want extra prompts. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
-- **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (in `.git/claude-reviews.jsonl`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.
+- **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (one file per run in `.git/claude-reviews/`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.
 - **Marketing and outreach output is private.** Prospect lists, contact names, email drafts, content calendars and reports go in `../bdc-growth/`, never in this repo. Agents draft; Jaap sends emails and publishes posts.
 - **Trademark:** the US application (serial 99376168) is pending. Don't add ® anywhere. Don't make legal claims about the mark.
 - **Don't add tracking scripts, cookie banners, or third-party embeds** without an intent that says so.
