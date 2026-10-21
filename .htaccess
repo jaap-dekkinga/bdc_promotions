@@ -1,0 +1,24 @@
+# bedc.shop is served from a copy of this whole repo (it pulls main on every
+# push), so without this file every repo file is public there: the pricing
+# sheet, CLAUDE.md, .claude/, intent/ ... Only the storefront may be served.
+# Everything else returns 404.
+#
+# Keep this list in step with "Collect storefront files" in
+# .github/workflows/static.yml (the GitHub Pages copy). If index.html starts
+# loading a file outside assets/, allow it in both places.
+
+Options -Indexes
+DirectoryIndex index.html
+
+RewriteEngine On
+
+# The storefront
+RewriteRule ^$ - [L]
+RewriteRule ^index\.html$ - [L]
+RewriteRule ^assets/ - [L]
+
+# The host's SSL certificate renewals (Let's Encrypt) need this path
+RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+# Everything else
+RewriteRule ^ - [R=404,L]

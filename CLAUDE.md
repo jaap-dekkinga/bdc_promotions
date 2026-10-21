@@ -1,7 +1,7 @@
 # CLAUDE.md — Be DC storefront (`bdc_promotions`)
 
 Single-page static storefront for **B★DC**, Washington, DC's city logo and motto. Owner: Jaap Dekkinga.
-No framework, no build step. Deploys to GitHub Pages from `main` via `.github/workflows/static.yml`.
+No framework, no build step. Live at https://bedc.shop (a host that pulls `main`; `.htaccess` limits what it serves). `.github/workflows/static.yml` validates every push and deploys the GitHub Pages copy from `main`.
 Merch is print-on-demand through Printful. There is no cart, checkout or backend in this repo, and there shouldn't be one.
 
 ## Commands
@@ -63,7 +63,8 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 - **Catalog drift:** `index.html` hard-codes the 7 product cards. Editing `products.json` alone changes nothing on the site. Change both (use the `add-product` skill).
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
-- **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.
+- **bedc.shop is not GitHub Pages.** It's a separate host (`Server: hcdn`, probably Hostinger) that pulls the whole repo on every push to `main`. `.htaccess` makes it serve only `index.html`, `assets/` and `.well-known/acme-challenge/`. `static.yml` deploys the GitHub Pages copy (`jaap-dekkinga.github.io/bdc_promotions/`). Change both allowlists together.
+- **The GitHub repo is public.** The deploys publish only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml` and to `.htaccess`.
 - **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools and commands (including SMTP) and for any `git push`, `gh pr merge`, `gh workflow run`, GitHub API merges/ref/content writes and auto-merge, even in auto mode. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
 - **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (in `.git/claude-reviews.jsonl`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.
 - **Marketing and outreach output is private.** Prospect lists, contact names, email drafts, content calendars and reports go in `../bdc-growth/`, never in this repo. Agents draft; Jaap sends emails and publishes posts.
