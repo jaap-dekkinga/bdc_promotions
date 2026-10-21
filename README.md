@@ -41,7 +41,8 @@ actually renders.
 ## Deploying
 
 - **bedc.shop (live):** Hostinger (hPanel Git deploy) pulls `main` into the site folder.
-  The root `.htaccess` makes it serve only `/`, `index.html` and `assets/`; every other
+  The root `.htaccess` makes it serve only `/`, `index.html`, `assets/` (and the SSL
+  renewal path `.well-known/acme-challenge/`); every other
   repo file returns 404 there.
 - **GitHub Pages copy:** `.github/workflows/static.yml` validates every push and PR, and on
   `main` copies `index.html` + `assets/` into `_site` and deploys that to
@@ -61,5 +62,5 @@ data/products.json           catalog reference for the 7 starter SKUs (USD)
 scripts/add_product.py       append a product to data/products.json
 product-pricing-sheet.md     SKU costs, retail prices, and margins for Printful (private numbers)
 .github/workflows/static.yml CI validate + GitHub Pages copy
-.htaccess                    bedc.shop allowlist (only index.html, assets/)
+.htaccess                    bedc.shop allowlist (only /, index.html, assets/, ACME path)
 ```

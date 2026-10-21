@@ -26,7 +26,7 @@ If a check fails, fix the code. Never weaken or delete a CI check to make it pas
 ## Layout
 
 ```
-.htaccess                  bedc.shop allowlist: only /, index.html, assets/ (keep in step with static.yml)
+.htaccess                  bedc.shop allowlist: only /, index.html, assets/ (+ ACME path); keep in step with static.yml
 index.html                 the whole site: story, Be ___ platform, DC facts, shop (7 cards), contact
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)

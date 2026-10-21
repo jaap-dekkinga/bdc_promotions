@@ -4,9 +4,9 @@ CLAUDE.md and docs/code-review-process.md ask for the `verifier` and
 `code-reviewer` subagents before every PR. Claude once skipped them, so:
 
   record  (PostToolUse on Agent): when Claude starts a verifier or
-          code-reviewer subagent, append {branch, agent, time} to
-          .git/claude-reviews/ (one file per run, inside .git, so never committed or
-          published).
+          code-reviewer subagent, write {branch, agent, time} as one
+          file per run in .git/claude-reviews/ (inside .git, so never
+          committed or published).
   check   (PreToolUse on Bash/PowerShell): on `gh pr create` or
           `gh pr ready`, deny unless both agents were recorded for the
           branch, and deny if the PR body still says either one was
@@ -49,7 +49,7 @@ def recorded(branch):
                 entry = json.loads(f.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 continue
-            if entry.get("branch") == branch:
+            if isinstance(entry, dict) and entry.get("branch") == branch:
                 ran.add(entry.get("agent"))
     return ran
 
