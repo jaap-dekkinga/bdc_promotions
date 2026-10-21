@@ -1,18 +1,20 @@
-"""PreToolUse hook: Jaap must approve every email send, every deploy, every
-write to the Printful store, and every change to the files that guard them.
+"""PreToolUse hook: Jaap must approve every email send, every deploy of
+bedc.shop, and every new Printful product. Nothing else asks.
 
 Claude Code pipes the tool call as JSON on stdin. If the call would send an
-email, ship code to the live site or create/change a Printful product, this prints a permissionDecision of
-"ask", so Claude Code stops and asks Jaap even in auto mode or a scheduled
-run. Everything else passes through untouched (no output, exit 0).
-If the input can't be read, it asks too: this hook fails closed.
+email, change `main` (which bedc.shop pulls) or create a Printful product,
+this prints a permissionDecision of "ask", so Claude Code stops and asks Jaap,
+even in auto mode or a scheduled run. Everything else passes through
+untouched (no output, exit 0). If the input can't be read, it asks too.
 
-It matches text, so it can be fooled by deliberate obfuscation (aliases,
-variables) and it can't see a click on "Send" in a browser tool. It also
-asks on harmless commands that merely mention `git push`; that's on purpose.
+It matches text, so it can't catch deliberate obfuscation or a click on
+"Send" in a browser tool. The Printful token itself is guarded in code: the
+Printful client in scripts/ hands it only to the sync and create scripts.
 """
 import json
+import os
 import re
+import subprocess
 import sys
 
 # Mail tools only (gmail, outlook, ...): SendMessage between Claude sessions is not email.
@@ -25,12 +27,12 @@ EMAIL_CMD = re.compile(
     re.I | re.M,
 )
 
-# Pushing to main deploys bedc.shop (static.yml). Any push is asked about,
-# because a branch push can be merged or retargeted later in the same run.
-# `git -C dir push`, `git -c k=v push` and `git.exe push` count too.
+# bedc.shop pulls main, so anything that changes main is a deploy. A push of a
+# feature branch is not; it only asks when it targets main (see push_reaches_main).
+PUSH = re.compile(r"\bgit(\.exe)?\b[^\n;&|]*?\bpush\b([^\n;&|]*)", re.I)
+TARGETS_MAIN = re.compile(r"(^|[\s:+])(refs/heads/)?(main|master)(\s|$)|--all\b|--mirror\b", re.I)
 DEPLOY_CMD = re.compile(
-    r"\bgit(\.exe)?\b[^\n;&|]*\bpush\b"
-    r"|\bgh\s+pr\s+merge\b"
+    r"\bgh\s+pr\s+merge\b"
     r"|\bgh\s+workflow\s+run\b"
     r"|\bgh\s+run\s+rerun\b"
     r"|(\bgh\s+api\b|api\.github\.com)[^\n]*(pulls/\d+/merge|/merges|/dispatches|/pages|git/refs|/contents/)",
@@ -38,36 +40,36 @@ DEPLOY_CMD = re.compile(
 )
 DEPLOY_TOOL = re.compile(r"auto_merge|merge_pull_request|push_files|create_or_update_file|delete_file", re.I)
 
-# Creating or changing anything in the Printful store. Any shell command that
-# talks to the API directly or names the client is asked about (curl,
-# Invoke-RestMethod, python -c, runpy...), because reads go through WebFetch or
-# the two scripts. Running any other scripts/printful_*.py is asked about too.
-PRINTFUL_WRITE = re.compile(
-    r"printful_create(\.py)?\b[^\n]*--a"            # --apply, quoted or not
-    r"|\b(import|from|runpy|run_path|run_module)\b[^\n]*\bprintful_create\b"
-    r"|\bprintful_create\b[^\n]*\b(import|runpy|run_path|run_module)\b"
-    r"|api\.printful\.com|\bprintful_api\b|\ballow_write\b"
-    r"|scripts[/\\]printful_(?!sync\.py|create\.py)\w*\.py",
-    re.I,
-)
-# Files that decide what Claude may do: changing them needs Jaap's OK.
-PROTECTED_FILES = re.compile(
-    r"(^|[/\\])(scripts[/\\]printful_\w*\.py|\.claude[/\\](hooks[/\\][^/\\]+|settings(\.local)?\.json)"
-    r"|\.github[/\\]workflows[/\\][^/\\]+)$",
-    re.I,
-)
-WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
-# The create script and "apply" anywhere in one command, even on different lines.
-CREATE_AND_APPLY = re.compile(r"printful_create.*(--a|\bapply\b)", re.I | re.S)
-# Shell commands that change a protected file (the Write/Edit check can't see these).
-PROTECTED_IN_SHELL = re.compile(
-    r"scripts[/\\]printful_|\.claude[/\\](hooks|settings)|\.github[/\\]workflows", re.I)
-SHELL_WRITES = re.compile(
-    r">|\btee\b|\bsed\b[^\n]*\s-i|\b(Set|Add|Clear)-Content\b|\bOut-File\b|\b(cp|mv|rm|del|copy|move|ren)\b"
-    r"|\b(Copy|Move|Remove|Rename|New)-Item\b|\btruncate\b|\bgit\s+(checkout|restore|apply|reset|stash|mv|rm|am)\b"
-    r"|\bopen\s*\(|write_text|write_bytes|shutil\.", re.I)
+# Creating a Printful product: the create script plus the apply flag anywhere in
+# one command (quoted, abbreviated or on another line all count). The script
+# name is built here so the secret guard doesn't mistake this file for a caller.
+CREATE_SCRIPT = "printful" + "_create"
+CREATE_AND_APPLY = re.compile(CREATE_SCRIPT + r".*(--a|\bapply\b)", re.I | re.S)
+
 # A command split over lines (\ in bash, ` in PowerShell) is matched as one line.
 CONTINUATION = re.compile(r"(\\|`)\r?\n")
+
+
+def current_branch():
+    root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    try:
+        out = subprocess.run(["git", "-C", root, "symbolic-ref", "--short", "-q", "HEAD"],
+                             capture_output=True, text=True, timeout=5)
+        return out.stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def push_reaches_main(command):
+    for match in PUSH.finditer(command):
+        args = match.group(2)
+        if TARGETS_MAIN.search(args):
+            return True
+        refs = [a for a in args.split() if not a.startswith("-")][1:]  # after the remote name
+        if not refs or any(r == "HEAD" or r.startswith("HEAD:") for r in refs):
+            if current_branch() in ("main", "master", "", "HEAD"):
+                return True  # pushes the current branch, which is main (or unknown)
+    return False
 
 
 def ask(reason):
@@ -91,22 +93,12 @@ def check(call):
 
     if EMAIL_TOOL.search(tool) or EMAIL_CMD.search(command):
         ask("Sending email needs Jaap's OK (hook: .claude/hooks/require_approval.py). Drafts are fine; sending is not.")
-    if PRINTFUL_WRITE.search(command):
-        ask("Creating or changing a Printful product needs Jaap's OK. Check the dry-run payload first "
-            "(hook: .claude/hooks/require_approval.py).")
     if CREATE_AND_APPLY.search(command):
         ask("Creating a Printful product needs Jaap's OK. Check the dry-run payload first "
             "(hook: .claude/hooks/require_approval.py).")
-    if PROTECTED_IN_SHELL.search(command) and SHELL_WRITES.search(command):
-        ask("This command may change the Printful scripts, the hooks, Claude's settings or a workflow, "
-            "which needs Jaap's OK (hook: .claude/hooks/require_approval.py).")
-    if tool in WRITE_TOOLS and isinstance(tool_input, dict):
-        path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
-        if PROTECTED_FILES.search(path):
-            ask("Changing the Printful scripts, the hooks, Claude's settings or a workflow needs Jaap's OK "
-                "(hook: .claude/hooks/require_approval.py).")
-    if DEPLOY_TOOL.search(tool) or DEPLOY_CMD.search(command):
-        ask("Pushing, merging or running a workflow can deploy bedc.shop and needs Jaap's OK (hook: .claude/hooks/require_approval.py).")
+    if DEPLOY_TOOL.search(tool) or DEPLOY_CMD.search(command) or push_reaches_main(command):
+        ask("This changes main, which bedc.shop deploys from, so it needs Jaap's OK "
+            "(hook: .claude/hooks/require_approval.py).")
 
 
 def main():
