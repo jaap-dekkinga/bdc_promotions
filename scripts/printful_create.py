@@ -106,7 +106,8 @@ def payload(draft):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Create a Printful product from a draft file.")
+    # allow_abbrev=False: "--ap" must not count as "--apply" (the approval hook matches the full flag).
+    ap = argparse.ArgumentParser(description="Create a Printful product from a draft file.", allow_abbrev=False)
     ap.add_argument("draft", help="draft JSON file")
     ap.add_argument("--apply", action="store_true", help="really create it (otherwise dry run)")
     ap.add_argument("--skip-catalog-check", action="store_true", help="don't look up variants in the public catalog")
@@ -136,7 +137,7 @@ def main():
         except pf.PrintfulError as e:
             if "HTTP 404" not in str(e):
                 raise
-        created = pf.request("POST", "/store/products", body=body, token=token) or {}
+        created = pf.request("POST", "/store/products", body=body, token=token, allow_write=True) or {}
     except pf.PrintfulError as e:
         sys.exit(f"printful_create: {e}")
 

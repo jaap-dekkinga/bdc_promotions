@@ -8,7 +8,11 @@ anywhere here is a leaked token. This denies a tool call when:
   - a command tries to read or print the stored Printful token
     (Credential Manager "bdc-printful", $PRINTFUL_TOKEN, CredRead...), or to
     store a secret (`gh secret set`, `cmdkey /pass`): only Jaap does that.
+    Listing the environment (`env`, `printenv`, `gci env:`) counts too;
+  - a file written outside scripts/printful_*.py and these hooks contains
+    code that reads the token (get_token(), CredRead, import printful_api).
 Only scripts/printful_api.py reads the token, inside the printful_*.py scripts.
+`python .claude/hooks/guard_secrets.py scan` checks tracked files (CI).
 
 It can't catch a token that is split up or encoded on purpose.
 """
@@ -26,14 +30,18 @@ TOKEN_PATTERNS = [
 # Reading, printing or storing the token. Merely naming it (docs, commit
 # messages, `env -u PRINTFUL_TOKEN`) is fine.
 READS_TOKEN = re.compile(
-    r"\$\{?PRINTFUL_TOKEN|\$env:PRINTFUL_TOKEN|env:\\?PRINTFUL|\bprintenv\b|\bGet-ChildItem\s+env:"
-    r"|(os\.environ|getenv)[^\n]*PRINTFUL_TOKEN|CredRead|Get-StoredCredential|\bvaultcmd\b|get_token\s*\("
+    r"\$\{?PRINTFUL_TOKEN|\$env:PRINTFUL_TOKEN|env:\\?PRINTFUL|\bprintenv\b|\b(Get-ChildItem|gci|dir|ls)\s+env:"
+    r"|(^|[;&|(`]\s*)env\s*($|[|;&>])|GetEnvironmentVariable"
+    r"|(os\.environ|getenv)[^\n]*PRINTFUL_TOKEN|CredRead|Get-StoredCredential|\bvaultcmd\b"
+    r"|get_token|_token_from_credential_manager|(import|from)\s+printful_api\b"
     r"|\bgh\s+secret\s+set\b|\bcmdkey\b[^\n]*(/pass|bdc-printful)",
-    re.I,
+    re.I | re.M,
 )
-# The only commands allowed to mention the token name: running the scripts themselves.
-RUNS_SCRIPT = re.compile(r"^\s*(\S*python\S*|py)\s+(-I\s+)?\S*scripts[/\\]printful_(sync|create)\.py(\s|$)")
+# Code that reads the token may only live in the Printful scripts and these hooks.
+CODE_READS_TOKEN = re.compile(r"get_token\s*\(|_token_from_credential_manager|CredRead|(import|from)\s+printful_api\b")
+TOKEN_CODE_FILES = re.compile(r"(^|[/\\])(scripts[/\\]printful_\w+\.py|\.claude[/\\]hooks[/\\]\w+\.py)$")
 SHELL_TOOLS = {"Bash", "PowerShell"}
+WRITE_TOOLS = {"Write", "Edit", "NotebookEdit"}
 
 
 def strings(value):
@@ -72,8 +80,8 @@ def scan_repo():
         for no, line in enumerate(lines, 1):
             for pattern in TOKEN_PATTERNS:
                 found = pattern.search(line)
-                if found:
-                    hits.append(f"{name}:{no}: looks like a secret ({found.group(0)[:4]}…)")
+                if found:  # CI logs are public: never print any part of the match
+                    hits.append(f"{name}:{no}: looks like a secret")
     if hits:
         print("\n".join(hits))
         print("::error::Possible secret in tracked files. Revoke it, remove it, and see CLAUDE.md.")
@@ -104,10 +112,15 @@ def main():
 
     if tool in SHELL_TOOLS:
         command = tool_input.get("command", "") if isinstance(tool_input, dict) else ""
-        for part in re.split(r"&&|\|\||;|\n|\|", str(command)):
-            if READS_TOKEN.search(part) and not RUNS_SCRIPT.search(part):
-                deny("Commands may not read, print or store the Printful token. Only scripts/printful_sync.py "
-                     "and printful_create.py use it, and only Jaap stores it.")
+        if READS_TOKEN.search(str(command)):
+            deny("Commands may not read, print or store the Printful token. Run scripts/printful_sync.py "
+                 "or printful_create.py without mentioning it; only Jaap stores it.")
+    if tool in WRITE_TOOLS and isinstance(tool_input, dict):
+        path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
+        if not TOKEN_CODE_FILES.search(path):
+            for text in strings({k: v for k, v in tool_input.items() if k not in ("file_path", "notebook_path")}):
+                if CODE_READS_TOKEN.search(text):
+                    deny("Only scripts/printful_*.py may contain code that reads the Printful token.")
 
 
 if __name__ == "__main__":

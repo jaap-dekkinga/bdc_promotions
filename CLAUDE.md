@@ -34,7 +34,7 @@ index.html                 the whole site: story, Be ___ platform, DC facts, sho
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
 assets/img/                logo, hero and product images (binary; don't regenerate or rename)
-data/products.json         catalog reference (7 SKUs, USD)
+data/products.json         the catalog and source of the shop cards (live + draft products, USD)
 scripts/add_product.py     appends to products.json and re-renders the shop
 scripts/render_shop.py     generates the shop cards in index.html from products.json
 scripts/printful_sync.py   pulls the Printful store (run by .github/workflows/printful-sync.yml)

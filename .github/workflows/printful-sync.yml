@@ -70,15 +70,24 @@ jobs:
             echo "Printful and the site already match. Nothing to do."
             exit 0
           fi
-          BRANCH="printful-sync/$(date -u +%Y-%m-%d)"
+          # One rolling branch and PR, so an unmerged sync is updated instead of duplicated.
+          BRANCH="printful-sync"
+          BOT="41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            OTHERS=$(git log --format=%ae "origin/main..FETCH_HEAD" | grep -vxF "$BOT" || true)
+            if [ -n "$OTHERS" ]; then
+              echo "::warning::Someone else committed to $BRANCH. Not overwriting it; merge or close that PR and the next run starts fresh."
+              exit 0
+            fi
+          fi
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "$BOT"
           git switch -c "$BRANCH"
           git add data/products.json index.html product-pricing-sheet.md assets/img
           git commit -m "Printful sync $(date -u +%Y-%m-%d)"
           git push --force origin "$BRANCH"
           if gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
-            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/summary.md"
+            gh pr edit "$BRANCH" --title "Printful sync $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/summary.md"
           else
             gh pr create --base main --head "$BRANCH" \
               --title "Printful sync $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/summary.md"

@@ -38,13 +38,17 @@ DEPLOY_CMD = re.compile(
 )
 DEPLOY_TOOL = re.compile(r"auto_merge|merge_pull_request|push_files|create_or_update_file|delete_file", re.I)
 
-# Creating or changing anything in the Printful store.
+# Creating or changing anything in the Printful store. Any shell command that
+# talks to the API directly is asked about (curl, Invoke-RestMethod, python
+# urllib...), because reads go through WebFetch or the printful_*.py scripts.
 PRINTFUL_WRITE = re.compile(
-    r"printful_create\.py\b[^\n]*--apply"
-    r"|api\.printful\.com[^\n]*(-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DELETE)|--data|\s-d\s)"
-    r"|(-X\s*(POST|PUT|PATCH|DELETE)|--request\s+(POST|PUT|PATCH|DELETE)|--data|\s-d\s)[^\n]*api\.printful\.com",
+    r"printful_create(\.py)?\b[^\n]*\s--a"          # --apply, or any abbreviation of it
+    r"|api\.printful\.com"
+    r"|(import|from)\s+printful_api\b|printful_api\.(request|get_token|_token)",
     re.I,
 )
+# A command split over lines (\ in bash, ` in PowerShell) is matched as one line.
+CONTINUATION = re.compile(r"(\\|`)\r?\n")
 
 
 def ask(reason):
@@ -64,7 +68,7 @@ def check(call):
     command = tool_input.get("command", "") if isinstance(tool_input, dict) else tool_input
     if isinstance(command, list):
         command = " ".join(map(str, command))
-    command = str(command or "")
+    command = CONTINUATION.sub(" ", str(command or ""))
 
     if EMAIL_TOOL.search(tool) or EMAIL_CMD.search(command):
         ask("Sending email needs Jaap's OK (hook: .claude/hooks/require_approval.py). Drafts are fine; sending is not.")

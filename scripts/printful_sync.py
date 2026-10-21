@@ -60,7 +60,8 @@ def update_sheet(sheet, name, price, notes):
     lines = sheet.split("\n")
     for i, line in enumerate(lines):
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) != 6 or cells[0] != name:
+        # Rows may add detail in brackets: "Hat (embroidered)" is the Hat row.
+        if len(cells) != 6 or not (cells[0] == name or cells[0].startswith(name + " (")):
             continue
         cells[3] = render_shop.money(price)
         cost = re.search(r"\$(\d+(?:\.\d+)?)", cells[2])
@@ -119,12 +120,13 @@ def sync(token, log):
                 local["printful_id"] = pid
                 changes.append(f"- Linked **{local['title']}** to Printful product {pid}.")
             old = Decimal(str(local["price"]))
-            if old != price:
+            if currency != local.get("currency"):
+                notes.append(f"- **{local['title']}**: Printful prices it in {currency}, the site in "
+                             f"{local.get('currency')}. Price not changed; set the store currency in Printful.")
+            elif old != price:
                 changes.append(f"- **{local['title']}**: price {render_shop.money(old)} → {render_shop.money(price)}")
                 local["price"] = fmt(price)
                 sheet = update_sheet(sheet, local.get("name") or local["title"], price, notes)
-            if currency != local.get("currency"):
-                notes.append(f"- **{local['title']}**: Printful currency is {currency}, catalog says {local.get('currency')}. Not changed.")
 
         if not local.get("image") and info.get("thumbnail_url"):
             try:

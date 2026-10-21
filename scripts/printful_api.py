@@ -39,6 +39,23 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 _api_opener = urllib.request.build_opener(_NoRedirect)
 
 
+def _is_printful_host(url):
+    parts = urllib.parse.urlparse(url or "")
+    host = parts.hostname or ""
+    return parts.scheme == "https" and (host == "printful.com" or host.endswith(".printful.com"))
+
+
+class _PrintfulOnlyRedirect(urllib.request.HTTPRedirectHandler):
+    """Image downloads may follow redirects, but only to other Printful hosts."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not _is_printful_host(newurl):
+            raise PrintfulError(f"image redirect to a non-Printful host refused: {newurl}")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_image_opener = urllib.request.build_opener(_PrintfulOnlyRedirect)
+
+
 def _token_from_credential_manager():
     if sys.platform != "win32":
         return None
@@ -96,10 +113,15 @@ def _error_message(err):
         return err.reason
 
 
-def request(method, path, body=None, token=None, auth=True, retries=4):
-    """Call the Printful API and return the "result" part of the response."""
+def request(method, path, body=None, token=None, auth=True, retries=4, allow_write=False):
+    """Call the Printful API and return the "result" part of the response.
+
+    Only GET is allowed unless the caller passes allow_write=True; only
+    printful_create.py --apply does, after Jaap's approval."""
     if not path.startswith("/"):
         raise PrintfulError(f"bad API path: {path!r}")
+    if method != "GET" and not allow_write:
+        raise PrintfulError(f"{method} {path}: writes are only allowed from printful_create.py --apply")
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if auth:
         headers["Authorization"] = "Bearer " + (token or get_token())
@@ -118,7 +140,10 @@ def request(method, path, body=None, token=None, auth=True, retries=4):
                 return json.loads(resp.read().decode("utf-8")).get("result")
         except urllib.error.HTTPError as err:
             if err.code == 429 and attempt < retries:
-                wait = min(int(err.headers.get("Retry-After") or 2 ** attempt), 60)
+                try:
+                    wait = min(int(err.headers.get("Retry-After") or 2 ** attempt), 60)
+                except ValueError:  # an HTTP date instead of seconds
+                    wait = 2 ** attempt
                 time.sleep(wait)
                 continue
             raise PrintfulError(f"{method} {path}: HTTP {err.code}: {_error_message(err)}") from None
@@ -138,12 +163,11 @@ def list_store_products(token):
 
 def download_image(url, dest_without_ext):
     """Download a Printful image (https, *.printful.com only). Returns the saved path."""
-    parts = urllib.parse.urlparse(url or "")
-    host = parts.hostname or ""
-    if parts.scheme != "https" or not (host == "printful.com" or host.endswith(".printful.com")):
-        raise PrintfulError(f"refusing to download image from {host or 'an empty URL'}")
+    if not _is_printful_host(url):
+        host = urllib.parse.urlparse(url or "").hostname
+        raise PrintfulError(f"refusing to download image from {host or 'an empty or non-https URL'}")
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with _image_opener.open(req, timeout=30) as resp:
         ext = IMAGE_TYPES.get(resp.headers.get_content_type())
         if not ext:
             raise PrintfulError(f"not a JPEG/PNG/WebP image: {url}")
