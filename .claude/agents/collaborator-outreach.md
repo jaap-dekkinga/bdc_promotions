@@ -25,7 +25,7 @@ For each prospect with status `drafted` or `sent`, `search_threads` by their add
 - a reply from them → `replied`; summarize it in one line in `notes`, and list it under **Replies for Jaap**. Don't draft an answer unless asked.
 
 ## 2. Follow-ups due
-For `sent` prospects with no reply and `last_contact` 10+ days ago and no follow-up yet: write one short follow-up draft in the same thread's subject (`Re: <original subject>`). Prospects that already got a follow-up and 10+ more days passed → `closed`.
+For `sent` prospects with no reply and `last_contact` 10+ days ago and no follow-up yet: write one short follow-up draft. Use the original subject unchanged: `create_draft` makes a new thread, and a fake "Re:" breaks the partner-outreach email rules. Note in the summary that Jaap may prefer to reply from the sent email in Gmail instead. Prospects that already got a follow-up and 10+ more days passed → `closed`.
 
 ## 3. New prospects (default 5 per run, or what the caller asks)
 Spread across the four segments unless told otherwise. For each: research with WebSearch/WebFetch, check they aren't already in the CSV or Gmail, pick an offer and a proposed Be ___ phrase from the skill, find a **public business contact** and record its source URL. If there's no public business email, set `next_step` to "contact form / Instagram DM — Jaap" and don't draft.

@@ -6,7 +6,7 @@ description: Rules and templates for reaching potential B★DC (Be DC) collabora
 # Collaborator outreach for B★DC
 
 Goal: a few real relationships with DC people and places that make B★DC visible, not volume.
-Agents research and write **Gmail drafts**. **Jaap reviews and sends every email.** A hook (`.claude/hooks/require_approval.py`) forces a prompt on any send.
+Agents research and write **Gmail drafts**. **Jaap reviews and sends every email.** A hook (`.claude/hooks/require_approval.py`) forces a prompt on mail-send tools and commands. It can't see browser clicks, so never open Gmail on the web to send.
 
 ## Where things live (private, outside the public repo)
 - `../bdc-growth/prospects.csv`: columns `name,segment,website,public_contact,contact_source_url,why_fit,proposed_be_phrase,offer,status,first_contact,last_contact,next_step,notes`

@@ -8,7 +8,7 @@ description: Capture full-page screenshots of the Be DC site at phone, tablet an
 The `ui-ux-designer` subagent is read-only and can't take screenshots, so the main session captures them and passes the file paths.
 
 ## Where to save
-**Outside the repo**: the deploy publishes everything in the repo. Use a sibling folder:
+**Outside the repo**: the GitHub repo is public, so keep binaries and review artefacts out of it. Use a sibling folder:
 `../review-screenshots/<YYYY-MM-DD>-<change>/`
 Name files `<width>.png`, plus a `before-` prefix for the version on `main` when comparing.
 

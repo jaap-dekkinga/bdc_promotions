@@ -32,7 +32,7 @@ assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
 assets/img/                logo, hero and product images (binary; don't regenerate or rename)
 data/products.json         catalog reference (7 SKUs, USD)
 scripts/add_product.py     appends to products.json
-product-pricing-sheet.md   blank cost / retail / margin per SKU
+product-pricing-sheet.md   cost / retail / margin per SKU (private numbers; repo is public)
 intent/                    intent.md → spec.md → plan.md per change (see docs/ai-native-workflow.md)
 .claude/skills/            be-dc-brand, add-product, apparel-storefront-ux, web-accessibility, site-screenshots,
                            free-marketing, partner-outreach
@@ -64,7 +64,8 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
 - **The GitHub repo is public.** The deploy now publishes only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml`.
-- **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools/commands and for `git push`, `gh pr merge`, `gh workflow run` and auto-merge, even in auto mode. Gmail *drafts* are fine. Don't weaken or bypass the hook.
+- **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools and commands (including SMTP) and for any `git push`, `gh pr merge`, `gh workflow run`, GitHub API merges/ref/content writes and auto-merge, even in auto mode. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
+- **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (in `.git/claude-reviews.jsonl`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.
 - **Marketing and outreach output is private.** Prospect lists, contact names, email drafts, content calendars and reports go in `../bdc-growth/`, never in this repo. Agents draft; Jaap sends emails and publishes posts.
 - **Trademark:** the US application (serial 99376168) is pending. Don't add ® anywhere. Don't make legal claims about the mark.
 - **Don't add tracking scripts, cookie banners, or third-party embeds** without an intent that says so.

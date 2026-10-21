@@ -63,17 +63,15 @@ Small fixes (a typo, one price) can skip 1–2 and go straight to plan mode. Use
 - `CLAUDE.md` + the rule "same mistake twice → add it to CLAUDE.md".
 - Plan mode as the default start for any code change.
 - Intent folders for anything non-trivial.
-- The two skills and the verifier.
+- The skills in `.claude/skills/` and the verifier.
+- **Hooks** in `.claude/settings.json` (in place): `require_approval.py` asks Jaap before any email send or any push/merge/workflow run; `require_reviews.py` blocks `gh pr create` until `verifier` and `code-reviewer` have run on the branch. A hook prints `permissionDecision: "ask"` or `"deny"` with a reason. Skills are advice; hooks are enforced.
 - Work on a branch and merge through a PR, even solo. It gives CI a chance to fail before the live site does, and the PR is the record.
 
 **Later (when it's worth an hour)**
 - **One-command check.** The CI checks live inline in `static.yml`. Moving them into `scripts/check.py` and calling that from both CI and `CLAUDE.md` gives Claude the exact same feedback loop as CI. Good second intent.
 - **Claude PR review** with `anthropics/claude-code-action` in GitHub Actions, reading `REVIEW.md`. Needs an Anthropic API key as a repo secret; costs cents per PR.
-- **Hooks** in `.claude/settings.json`. Two that fit this repo:
-  - block edits to `.github/workflows/**` unless you've said so in the session (the deploy is the one thing that can take the shop offline);
-  - block `git push` to `main` so every change goes through a PR.
-  A hook is a small script that exits `2` to block and prints why. Skills are advice; hooks are enforced.
-- **Scheduled check (Stage 6 light).** A weekly scheduled task: load the live site, confirm it returns 200, every shop button points to a Printful URL or "Notify me", and catalog and page agree. Anything off becomes a new `intent.md`.
+- **More hooks:** block edits to `.github/workflows/**` unless you've said so in the session (the deploy is the one thing that can take the shop offline).
+- **Scheduled check (Stage 6 light):** in place as the `bdc-weekly-growth` task (Mondays), which runs `site-improver`.
 
 **Skip at this size**
 - Managed/enterprise settings, MDM, sandbox profiles, OpenTelemetry, approved plugin marketplaces.
