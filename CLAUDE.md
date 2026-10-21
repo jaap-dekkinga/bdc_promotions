@@ -11,11 +11,15 @@ Merch is print-on-demand through Printful. There is no cart, checkout or backend
 | Serve locally | `npm start` (= `npx serve .`) | `Serving!` on http://localhost:3000 |
 | Check catalog JSON | `python -m json.tool data/products.json > /dev/null` | no output, exit 0 |
 | Check JS syntax | `node --check assets/js/main.js` | no output, exit 0 |
-| Check Python | `python -m py_compile scripts/add_product.py` | no output, exit 0 |
-| Add a product | `python scripts/add_product.py --id … --title … --price … --be "Be …" --fact "…"` | `Saved N products to data/products.json` |
+| Check Python | `python -m py_compile scripts/*.py .claude/hooks/*.py` | no output, exit 0 |
+| Check shop cards | `python scripts/render_shop.py --check` | `OK: shop shows N of N products, in sync…` |
+| Check for secrets | `python .claude/hooks/guard_secrets.py scan` | `OK: no token-like strings in N tracked files` |
+| Add a product (local only) | `python scripts/add_product.py --id … --title … --name … --price … --be "Be …" --fact "…" --image assets/img/… --alt …` | `Saved N products…`, then `Rendered N of N products…` |
+| New product in Printful | `printful-product-creator` agent → `python scripts/printful_create.py <draft.json>` (dry run); `--apply` only after Jaap's OK | payload printed / `Created Printful product …` |
+| Pull from Printful | GitHub → Actions → **Printful sync** → Run workflow (it also runs daily) | a `Printful sync <date>` PR, or "nothing to do" |
 
 CI (`static.yml` → `validate` job) also checks: required product fields, unique ids/slugs, numeric prices,
-that every `assets/…` path in `index.html` exists, and HTML Tidy has no `Error:` lines. Deploy runs only if validate passes.
+that every `assets/…` path in `index.html` exists, that the shop cards match `data/products.json`, that no tracked file contains a token-like string, and HTML Tidy has no `Error:` lines. Deploy runs only if validate passes.
 
 ## Definition of done
 
@@ -27,12 +31,16 @@ If a check fails, fix the code. Never weaken or delete a CI check to make it pas
 
 ```
 .htaccess                  bedc.shop allowlist: only /, index.html, assets/ (+ ACME path); keep in step with static.yml
-index.html                 the whole site: story, Be ___ platform, DC facts, shop (7 cards), contact
+index.html                 the whole site: story, Be ___ platform, DC facts, shop (generated cards), contact
 assets/css/style.css       brand styles
 assets/js/main.js          nav toggle, PRINTFUL_LINKS map, contact form (mailto)
 assets/img/                logo, hero and product images (binary; don't regenerate or rename)
-data/products.json         catalog reference (7 SKUs, USD)
-scripts/add_product.py     appends to products.json
+data/products.json         the catalog and source of the shop cards (live + draft products, USD)
+scripts/add_product.py     appends to products.json and re-renders the shop
+scripts/render_shop.py     generates the shop cards in index.html from products.json
+scripts/printful_sync.py   pulls the Printful store (run by .github/workflows/printful-sync.yml)
+scripts/printful_create.py creates one Printful product from a draft (dry run unless --apply)
+scripts/printful_api.py    Printful client; the only code that reads the token
 product-pricing-sheet.md   cost / retail / margin per SKU (private numbers; repo is public)
 intent/                    intent.md → spec.md → plan.md per change (see docs/ai-native-workflow.md)
 .claude/skills/            be-dc-brand, add-product, apparel-storefront-ux, web-accessibility, site-screenshots,
@@ -43,6 +51,7 @@ intent/                    intent.md → spec.md → plan.md per change (see doc
 .claude/agents/site-improver.md live health + SEO/sharing check, turns top findings into intent.md drafts
 .claude/agents/marketing-planner.md $0 marketing: 2-week content calendar + ranked to-dos (in ../bdc-growth/)
 .claude/agents/collaborator-outreach.md finds DC collaborators, writes Gmail drafts (never sends)
+.claude/agents/printful-product-creator.md drafts a product; creates it in Printful only after Jaap's OK
 ../bdc-growth/             PRIVATE, outside the repo: prospects.csv, outreach-log.md, content-calendar.md, reports/
 REVIEW.md                  review policy (what failure looks like, tags, round cap)
 docs/code-review-process.md  review layers, risk tiers, eval + noise loop
@@ -61,12 +70,14 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 
 ## Things Claude gets wrong here
 
-- **Catalog drift:** `index.html` hard-codes the 7 product cards. Editing `products.json` alone changes nothing on the site. Change both (use the `add-product` skill).
+- **Catalog drift:** the shop cards in `index.html` are generated from `data/products.json` between the `shop:start` / `shop:end` markers. Never edit them by hand: change the JSON and run `python scripts/render_shop.py` (CI fails if they differ). Only `status: "live"` products with a Be ___ phrase, a fact and an image are shown.
+- **Printful token:** never in the repo, a file, a command, chat or a log. GitHub uses the `PRINTFUL_TOKEN` repository secret (read-only scope `sync_products/read`); this PC uses Windows Credential Manager `bdc-printful` (write scope `sync_products`, for `printful_create.py`). Only `scripts/printful_api.py` reads it, and only Jaap stores or rotates it. `.claude/hooks/guard_secrets.py` denies token-like strings anywhere, commands that read the token or list the environment, and token-reading code in any code file other than the three Printful scripts. `require_approval.py` asks before `printful_create.py --apply`. `printful_api.py` hands out the token only when the running program is `scripts/printful_sync.py` or `printful_create.py`, and allows writes only from `printful_create.py`, so copies, helper files (any extension) and `python -c` are refused. All of this stops mistakes and ordinary shortcuts, not deliberate tampering (spoofing `__main__`, patching the gate): never try to get around it. Jaap chose to keep the write token on this PC knowing that. Docs may mention the client and `--apply` only in `docs/`, `intent/`, `review-evals/`, `.claude/agents/`, `.claude/skills/` and top-level `*.md`. If a token is ever pasted or committed, tell Jaap to revoke it at once.
+- **Hook changes can lock the session.** The hooks fail closed: a hook that crashes blocks every tool call, including the edit that would fix it (it happened once, Jaap had to fix it by hand). Change a hook on a copy in the scratchpad, test it there with piped JSON, and only then copy it over the live file.
 - **Shop buttons:** a slug with `""` in `PRINTFUL_LINKS` shows "Notify me" on purpose. Don't invent Printful URLs; leave `""` until Jaap provides the real link.
 - **Two deploy workflows:** `static.yml` is the active one. `deploy-pages.yml` is manual-only on purpose. Don't put it back on `push`.
 - **bedc.shop is not GitHub Pages.** It is Hostinger (hPanel Git deploy; responses carry `platform: hostinger` and `Server: hcdn`), which pulls `main` into the site folder. `.htaccess` makes it serve only `index.html`, `assets/` and `.well-known/acme-challenge/`. `static.yml` deploys the GitHub Pages copy (`jaap-dekkinga.github.io/bdc_promotions/`). Change both allowlists together.
 - **The GitHub repo is public.** The deploys publish only `index.html` + `assets/`, but every committed file is still readable on GitHub. Don't add secrets, customer data, or private business notes. If `index.html` starts loading a file outside `assets/`, add it to the "Collect storefront files" step in `static.yml` and to `.htaccess`.
-- **Jaap approves every email send and every deploy.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call; it forces a permission prompt for mail-send tools and commands (including SMTP) and for any `git push`, `gh pr merge`, `gh workflow run`, GitHub API merges/ref/content writes and auto-merge, even in auto mode. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
+- **Jaap approves every email send, every deploy and every new Printful product, and nothing else.** `.claude/settings.json` runs `.claude/hooks/require_approval.py` before each tool call. It asks for mail-send tools and commands (including SMTP); for anything that changes `main`, which bedc.shop deploys from (a push to `main`, or a push while on `main`; `gh pr merge`; `gh workflow run`; GitHub API merges/ref/content writes; auto-merge); and for `printful_create.py --apply`. Pushing a feature branch, editing files and running checks don't ask: Jaap doesn't want extra prompts. If it can't read a tool call, it asks. Gmail *drafts* are fine. It matches text, so it can't see a click on "Send" in a browser tool: never send email through Gmail on the web. Don't weaken or bypass the hook.
 - **No PR without the review agents.** Claude once opened a PR without running `verifier` and `code-reviewer`. `.claude/hooks/require_reviews.py` now logs each run of those subagents per branch (one file per run in `.git/claude-reviews/`) and denies `gh pr create` / `gh pr ready` until both have run on the branch, or while the PR body says either was "not run". Don't write to that log by hand.
 - **Marketing and outreach output is private.** Prospect lists, contact names, email drafts, content calendars and reports go in `../bdc-growth/`, never in this repo. Agents draft; Jaap sends emails and publishes posts.
 - **Trademark:** the US application (serial 99376168) is pending. Don't add ® anywhere. Don't make legal claims about the mark.

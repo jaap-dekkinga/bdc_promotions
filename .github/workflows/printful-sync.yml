@@ -1,0 +1,100 @@
+name: Printful sync
+
+# Pulls the Printful store into data/products.json, the shop cards and the
+# pricing sheet, and opens a PR for Jaap to review. Nothing goes live until
+# that PR is merged (bedc.shop pulls main).
+#
+# Needs:
+#   - repository secret PRINTFUL_TOKEN: a Printful private token with only the
+#     sync_products/read scope (Settings → Secrets and variables → Actions)
+#   - repository variable PRINTFUL_STORE_ID, only for an account-level token
+#   - Settings → Actions → General → "Allow GitHub Actions to create and
+#     approve pull requests"
+# Runs only on schedule or by hand, never on pull requests, so PR code can't
+# reach the secret.
+
+on:
+  schedule:
+    - cron: "17 10 * * *"   # daily, 10:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write        # push the printful-sync-bot branch
+  pull-requests: write   # open or update the PR
+  actions: write         # start the CI validate run on that branch
+
+concurrency:
+  group: printful-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync from Printful
+    if: github.repository == 'jaap-dekkinga/bdc_promotions' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so "who committed to the sync branch" is answered correctly
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pull products from Printful
+        id: pull
+        env:
+          PRINTFUL_TOKEN: ${{ secrets.PRINTFUL_TOKEN }}
+          PRINTFUL_STORE_ID: ${{ vars.PRINTFUL_STORE_ID }}
+        run: |
+          if [ -z "$PRINTFUL_TOKEN" ]; then
+            echo "::notice::PRINTFUL_TOKEN secret is not set yet; skipping the sync."
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python scripts/printful_sync.py --summary "$RUNNER_TEMP/summary.md"
+
+      - name: Check the result
+        if: steps.pull.outputs.skipped != 'true'
+        run: |
+          python -m json.tool data/products.json > /dev/null
+          python scripts/render_shop.py --check
+          python .claude/hooks/guard_secrets.py scan
+
+      - name: Open or update the sync PR
+        if: steps.pull.outputs.skipped != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Printful and the site already match. Nothing to do."
+            exit 0
+          fi
+          # One rolling branch and PR, so an unmerged sync is updated instead of duplicated.
+          # Only the bot commits to it; if anyone else did, stop rather than overwrite their work.
+          BRANCH="printful-sync-bot"
+          BOT="41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            git fetch --quiet origin "$BRANCH"   # a failed fetch fails the job instead of force-pushing blind
+            OTHERS=$(git log --format=%ae "origin/main..FETCH_HEAD" | grep -vxF "$BOT" || true)
+            if [ -n "$OTHERS" ]; then
+              echo "::error::Someone other than the bot committed to $BRANCH. Not overwriting it. Merge that PR, or delete the $BRANCH branch, and run the sync again."
+              exit 1
+            fi
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "$BOT"
+          git switch -c "$BRANCH"
+          git add data/products.json index.html product-pricing-sheet.md assets/img
+          git commit -m "Printful sync $(date -u +%Y-%m-%d)"
+          git push --force origin "$BRANCH"
+          if gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$BRANCH" --title "Printful sync $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/summary.md"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "Printful sync $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/summary.md"
+          fi
+          # PRs opened with GITHUB_TOKEN don't trigger other workflows, so start CI by hand.
+          gh workflow run static.yml --ref "$BRANCH"

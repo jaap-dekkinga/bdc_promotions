@@ -51,6 +51,23 @@ actually renders.
 - `deploy-pages.yml` is the older gh-pages/peaceiris variant, set to manual
   (`workflow_dispatch`) only so the two workflows don't race over the same deployment.
 
+## Printful
+
+- **Products come from Printful.** The **Printful sync** workflow (daily, or Actions → Printful
+  sync → Run workflow) reads the store and opens a PR that updates prices, adds new Printful
+  products as drafts, and re-renders the shop. Nothing changes on bedc.shop until that PR is merged.
+- **New products:** the `printful-product-creator` Claude agent drafts the product, shows the exact
+  API call, and creates it only after approval (`scripts/printful_create.py --apply`).
+- **The token is never in this repo.** One-time setup, done by Jaap:
+  1. In Printful (Settings → API → Tokens), create two private tokens: one with only
+     `sync_products/read` (for GitHub), one with `sync_products` (for this PC).
+  2. GitHub: `gh secret set PRINTFUL_TOKEN` and paste the read-only token at the prompt
+     (or Settings → Secrets and variables → Actions). Then Settings → Actions → General →
+     allow GitHub Actions to create pull requests.
+  3. This PC: `cmdkey /generic:bdc-printful /user:printful /pass` and paste the write token
+     at the prompt (stored in Windows Credential Manager).
+  4. For an account-level token, also set the repository variable `PRINTFUL_STORE_ID`.
+
 ## Files
 
 ```
