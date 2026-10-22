@@ -12,7 +12,7 @@ A product lives in these places. A change is only done when they agree.
 | 1 | Printful | New products: the `printful-product-creator` agent (`scripts/printful_create.py`, dry run first, `--apply` only after Jaap's OK). Price changes: Jaap edits them in the Printful dashboard; the daily **Printful sync** PR brings them into the repo. |
 | 2 | `data/products.json` | The source for the shop. Fields: `id`/`slug` (same), `status` (`live` or `draft`), `title` (with B★DC), `name` (short card label), `be`, `description`, `dc_fact`, `price`, `currency`, `image`, `alt`, `printful_id`. Add with `python scripts/add_product.py …`, or edit the JSON. |
 | 3 | `index.html` → `#shop` | **Generated.** Run `python scripts/render_shop.py` after any JSON change; never edit the cards by hand. Only `live` products with a phrase, a fact and an image are shown. |
-| 4 | `assets/js/main.js` → `PRINTFUL_LINKS` | Add the slug. Use `''` until Jaap gives the real buy link (the card then shows "Notify me"). Never guess a URL. |
+| 4 | `data/products.json` → `buy_url` | The product's Printful Quick Store link. Leave `""` until Jaap gives the real link (the card then shows "Notify me"). Never guess a URL. |
 | 5 | `product-pricing-sheet.md` | A row with blank, base cost, retail, margin. Mark estimated costs as estimates. The sync updates retail and margin for linked products. |
 
 Product image: `assets/img/product-<slug>.jpg` (Jaap's photos) or `assets/img/printful/<slug>.*` (downloaded by the sync). Images must be under `assets/`: bedc.shop serves nothing else.

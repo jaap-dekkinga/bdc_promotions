@@ -22,7 +22,7 @@ You **never edit** `index.html`, `assets/`, `data/`, `scripts/` or `.github/`, a
 ## 1. Live health (read-only `curl`; nothing else touches the network)
 - `curl -s -o /dev/null -w "%{http_code}"` for `https://bedc.shop/` and every `assets/…` file the page references. Expect 200.
 - **Leaks:** these must return 404: `/product-pricing-sheet.md`, `/README.md`, `/CLAUDE.md`, `/REVIEW.md`, `/data/products.json`, `/intent/_TEMPLATE.md`, `/docs/ai-native-workflow.md`, `/.claude/agents/site-improver.md`. Any 200 is **Critical**.
-- **Shop buttons:** every slug in `PRINTFUL_LINKS` is either `""` ("Notify me", on purpose) or an `https://` Printful URL that returns 200/301/302. Count how many products can actually be bought.
+- **Shop buttons:** every live product's `buy_url` in `data/products.json` is either `""` ("Notify me", on purpose) or an `https://` Printful link that returns 200/301/302. Count how many products can actually be bought.
 - **Catalog sync:** every `data-slug` card in `index.html` has the same title and price as `data/products.json` and `product-pricing-sheet.md`.
 
 ## 2. Findability and sharing

@@ -1,6 +1,6 @@
 /* ==========================================================================
    Be DC — site behavior
-   Two things you'll want to edit before/after launch are marked TODO below.
+   Buy links come from data/products.json (see "Shop buttons" below).
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -18,26 +18,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ---- TODO #1: paste your Printful product links here -----------------
-     Once your Printful Quick Store (or Shopify + Printful store) is live,
-     copy each product's public URL in below. Any slug left as "" will show
-     a "Notify me" button instead of a dead link, so the site is safe to
-     launch before the store is ready.
+  /* ---- Shop buttons ------------------------------------------------------
+     Each card's buy link comes from "buy_url" in data/products.json, which
+     scripts/render_shop.py writes into the card as data-buy-url. A card
+     without one shows a "Notify me" button instead of a dead link, so the
+     site is safe before the Printful Quick Store links are in.
   ------------------------------------------------------------------------- */
-  var PRINTFUL_LINKS = {
-    'tshirt-white': '',
-    'tshirt-dark':  '',
-    'hoodie':       '',
-    'polo':         '',
-    'hat':          '',
-    'tote':         '',
-    'mug':          ''
-  };
-
   document.querySelectorAll('.product-card').forEach(function (card) {
-    var slug = card.getAttribute('data-slug');
     var btn = card.querySelector('.shop-btn');
-    var url = PRINTFUL_LINKS[slug];
+    var url = card.getAttribute('data-buy-url');
     if (url) {
       btn.setAttribute('href', url);
       btn.setAttribute('target', '_blank');

@@ -6,13 +6,14 @@ Costs marked **confirmed** come from Printful's published base pricing (checked 
 
 | Product | Suggested blank | Base cost | Retail price | Margin | Margin % |
 |---|---|---|---|---|---|
-| T-Shirt — White | Bella+Canvas 3001 | $11.50 *(confirmed)* | $30 | $18.50 | 62% |
+| Classic Tee | Bella+Canvas 3001 | $11.50 *(confirmed)* | $30 | $18.50 | 62% |
 | T-Shirt — Heather Grey | Bella+Canvas 3001, Heather | ~$12.50 *(estimate — heather colors often run ~$1 more)* | $30 | $17.50 | 58% |
 | Hoodie | Gildan 18500 | $26.00 *(confirmed)* | $52 | $26.00 | 50% |
 | Polo | Gildan / Port Authority polo | ~$19 *(estimate)* | $40 | $21.00 | 53% |
-| Hat (embroidered) | Structured twill cap | ~$17 *(estimate — embroidery setup can add a one-time digitizing fee)* | $28 | $11.00 | 39% |
+| Snapback Hat (embroidered) | Structured twill cap | ~$17 *(estimate — embroidery setup can add a one-time digitizing fee)* | $28 | $11.00 | 39% |
 | Tote Bag | Canvas tote | ~$10 *(estimate)* | $22 | $12.00 | 55% |
 | Mug (11oz) | Ceramic mug | $5.95 *(confirmed)* | $16 | $10.05 | 63% |
+| Baseball Cap | Printful baseball cap | ? *(add from Printful)* | $28 *(placeholder; the sync sets the real price)* | ? | ? |
 
 ## Notes
 

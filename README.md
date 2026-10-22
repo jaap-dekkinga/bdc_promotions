@@ -23,9 +23,8 @@ No framework, no build step — just `index.html` + `assets/`. Live at https://b
 
 ## Two edits before this is fully live
 
-1. **Printful links** — open `assets/js/main.js`, find `PRINTFUL_LINKS` near the top,
-   and paste each product's public URL against the matching slug once your Printful
-   Quick Store is set up. Any slug left `""` shows a **Notify me** button that routes
+1. **Printful links** — in `data/products.json`, set each live product's `buy_url` to its
+   Printful Quick Store link, then run `python scripts/render_shop.py`. Any product left `""` shows a **Notify me** button that routes
    to the contact form instead of a dead link, so the site is safe to publish before
    the store is ready.
 2. **Contact email** — done. The form and the footer link both point to

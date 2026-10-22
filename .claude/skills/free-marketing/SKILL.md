@@ -8,7 +8,7 @@ description: Playbook for free and low-cost marketing of B★DC (Be DC) merch: w
 Budget: **$0** unless Jaap approves a specific spend. Agents plan and draft; **Jaap posts and sends**. Brand rules: `be-dc-brand` skill (it wins on any conflict).
 
 ## Check this first
-- **Can people buy?** Read `PRINTFUL_LINKS` in `assets/js/main.js`. While a product's link is `""`, posts about it must ask people to tap "Notify me" / email, not "shop now". If no product is buyable, the top to-do is always "Get Printful links live", and posts aim at building the email list and partners.
+- **Can people buy?** Read `buy_url` in `data/products.json`. While a product's link is `""`, posts about it must ask people to tap "Notify me" / email, not "shop now". If no product is buyable, the top to-do is always "Get Printful links live", and posts aim at building the email list and partners.
 - **Does the link preview work?** If `index.html` has no Open Graph image, every shared link looks bare. Flag it to `site-improver` before a big push.
 
 ## Building blocks

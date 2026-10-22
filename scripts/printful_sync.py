@@ -80,6 +80,8 @@ def sync(token, log):
     sheet = SHEET.read_text(encoding="utf-8")
     by_id = {p["printful_id"]: p for p in products if p.get("printful_id")}
     by_slug = {p["slug"]: p for p in products}
+    by_ext = {str(p["printful_external_id"]).lstrip("#"): p for p in products if p.get("printful_external_id")}
+    by_name = {p["printful_name"].strip().lower(): p for p in products if p.get("printful_name")}
     changes, new, notes = [], [], []
     seen = set()
 
@@ -93,9 +95,14 @@ def sync(token, log):
         seen.add(pid)
         local = by_id.get(pid)
         if local is None:
-            candidate = by_slug.get(str(info.get("external_id") or ""))
-            if candidate is not None and not candidate.get("printful_id"):
-                local = candidate
+            # Not linked yet: match the Printful external ID (shown as #abc123 in the
+            # dashboard) or the exact Printful product name, set in data/products.json.
+            ext = str(info.get("external_id") or "")
+            for candidate in (by_ext.get(ext), by_slug.get(ext),
+                              by_name.get(str(info.get("name") or "").strip().lower())):
+                if candidate is not None and not candidate.get("printful_id"):
+                    local = candidate
+                    break
         if price is None:
             notes.append(f"- **{info.get('name')}** (Printful {pid}) has no priced variants; skipped.")
             continue
@@ -158,7 +165,7 @@ def sync(token, log):
         summary += [f"- **{p['title']}** → slug `{p['slug']}`, {render_shop.money(p['price'])}" for p in new]
     if notes:
         summary += ["", "### Needs a look"] + notes
-    summary += ["", "Buy buttons are not changed: links stay in `PRINTFUL_LINKS` in `assets/js/main.js`."]
+    summary += ["", "Buy buttons are not changed: links are the `buy_url` fields in `data/products.json`, set by hand (Printful's API has no buy links)."]
     log("\n".join(summary))
     return "\n".join(summary) + "\n"
 
