@@ -34,6 +34,7 @@ ROOT = render_shop.ROOT
 DATA = render_shop.DATA
 SHEET = ROOT / "product-pricing-sheet.md"
 IMAGE_DIR = Path("assets/img/printful")
+MARGIN_FLOOR = 39  # % over base cost; lower prices are flagged in the PR (add-product skill), not blocked
 
 
 def slugify(text):
@@ -72,6 +73,9 @@ def update_sheet(sheet, name, price, notes):
             margin = price - Decimal(cost.group(1))
             cells[4] = f"${margin:.2f}"
             cells[5] = f"{(margin / price * 100):.0f}%" if price else "?"
+            if price and margin / price * 100 < MARGIN_FLOOR:
+                notes.append(f"- **{name}**: Printful price {render_shop.money(price)} is a {margin / price * 100:.0f}% margin "
+                             f"over the ${cost.group(1)} base cost, below the {MARGIN_FLOOR}% floor. The store price is used anyway.")
         lines[i] = "| " + " | ".join(cells) + " |"
         return "\n".join(lines)
     notes.append(f"- Pricing sheet has no row for **{name}**: add its blank, base cost and retail {render_shop.money(price)}.")

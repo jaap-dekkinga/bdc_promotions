@@ -64,7 +64,7 @@ review-evals/              planted-bug cases for the reviewer + finding outcomes
 - Brand: navy `#002664`, red `#BB133E`, white. Big Shoulders Display (headlines), Inter (body), IBM Plex Mono (labels/data). Use the `be-dc-brand` skill for anything visible.
 - Write the mark as **B★DC** (with the star) in copy; "Be DC" when spoken/motto. Never "BDC" in customer-facing text.
 - Every product has a `Be ___` phrase and one DC fact. Facts must be true today or clearly framed as the 2010 research that started the project.
-- Prices in `index.html`, `data/products.json` and `product-pricing-sheet.md` must match. Change all three together.
+- **Prices come from the Printful store, automatically.** The daily Printful sync copies each linked product's Printful retail price (lowest variant) into `data/products.json`, the shop card and the pricing sheet's retail and margin cells, and opens a PR. Never set or "fix" a price by hand on the site: Jaap changes prices in Printful, and the next sync brings them in. The three places must still match; the sync keeps them in step. If a synced price falls below the 39% margin floor, say so in the PR, but don't block or override it.
 - Plain HTML/CSS/vanilla JS. No frameworks, bundlers or npm dependencies beyond `serve`.
 - Contact goes to `bdcpromotions@gmail.com` (mailto in `main.js` and footer in `index.html`).
 
