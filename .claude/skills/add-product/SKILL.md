@@ -18,7 +18,7 @@ A product lives in these places. A change is only done when they agree.
 Product image: `assets/img/product-<slug>.jpg` (Jaap's photos) or `assets/img/printful/<slug>.*` (downloaded by the sync). Images must be under `assets/`: bedc.shop serves nothing else.
 
 ## Steps
-1. Get from Jaap: name, blank (e.g. Bella+Canvas 3001), Printful cost, retail price, photo or Printful mockup, print file, buy link (or "not yet").
+1. Get from Jaap: name, blank (e.g. Bella+Canvas 3001), Printful cost, photo or Printful mockup, print file, buy link (or "not yet"). The starting price is the Printful store price; after that the sync keeps it in step.
 2. Write the Be ___ phrase and DC fact with the `be-dc-brand` skill. Check the phrase isn't already used.
 3. Make the edits above (for a new Printful product, the agent does 1–3).
 4. Verify:
@@ -29,4 +29,4 @@ Product image: `assets/img/product-<slug>.jpg` (Jaap's photos) or `assets/img/pr
 5. Report the edits and paste the check output.
 
 ## Pricing guardrail
-The current line runs 39% (hat) to 63% (mug) margin over Printful base cost, priced as a lifestyle brand, not a souvenir stand. If a synced price falls below 39%, or the base cost is still an estimate, flag it to Jaap in the PR; the store's price still wins. Remember the site promises free shipping over $50, which Printful still charges for.
+The current line runs 39% (hat) to 63% (mug) margin on the retail price ((retail − Printful base cost) ÷ retail), priced as a lifestyle brand, not a souvenir stand. The sync PR flags a margin below 39%, an estimated base cost, or a missing one; the store's price still wins. Remember the site promises free shipping over $50, which Printful still charges for.
