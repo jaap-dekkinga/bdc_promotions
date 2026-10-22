@@ -1,6 +1,6 @@
 # Be DC — starter line pricing sheet
 
-For the SKUs in Printful (live and draft). Retail prices below already match what's shown on the website — change both together if you adjust one.
+For the SKUs in Printful (live and draft). **Retail prices come from the Printful store automatically:** the daily Printful sync opens a PR that updates the Retail price and Margin cells (and the site) from Printful; it goes live when Jaap merges it. Change prices in Printful, not here. Base costs and blanks are kept by hand.
 
 Costs marked **confirmed** come from Printful's published base pricing (checked Sept 2026). Costs marked **estimate** are typical POD market range for that product category — confirm the real number in Printful's catalog before you finalize retail price, since it varies by exact blank/brand chosen.
 

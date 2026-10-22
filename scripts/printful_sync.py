@@ -34,6 +34,7 @@ ROOT = render_shop.ROOT
 DATA = render_shop.DATA
 SHEET = ROOT / "product-pricing-sheet.md"
 IMAGE_DIR = Path("assets/img/printful")
+MARGIN_FLOOR = 39  # margin as % of the retail price; lower ones are flagged in the PR (add-product skill), not blocked
 
 
 def slugify(text):
@@ -68,10 +69,23 @@ def update_sheet(sheet, name, price, notes):
             continue
         cells[3] = render_shop.money(price)
         cost = re.search(r"\$(\d+(?:\.\d+)?)", cells[2])
-        if cost:
+        estimated = "estimate" in cells[2].lower() or "~" in cells[2]
+        if not cost:
+            notes.append(f"- **{name}**: no base cost in the pricing sheet, so the margin at "
+                         f"{render_shop.money(price)} is unknown. Add the Printful cost.")
+        else:
             margin = price - Decimal(cost.group(1))
+            pct = margin / price * 100 if price else None
             cells[4] = f"${margin:.2f}"
-            cells[5] = f"{(margin / price * 100):.0f}%" if price else "?"
+            cells[5] = f"{pct:.0f}%" if pct is not None else "?"
+            kind = "estimated" if estimated else "base"
+            if pct is not None and pct < MARGIN_FLOOR:
+                notes.append(f"- **{name}**: at the Printful price {render_shop.money(price)} the margin on the retail "
+                             f"price is {pct:.1f}% (over the {kind} ${cost.group(1)} cost), below the {MARGIN_FLOOR}% "
+                             "floor. The store price is used anyway.")
+            elif estimated and pct is not None:
+                notes.append(f"- **{name}**: margin {pct:.1f}% is based on an estimated ${cost.group(1)} cost. "
+                             "Confirm the real Printful cost in the pricing sheet.")
         lines[i] = "| " + " | ".join(cells) + " |"
         return "\n".join(lines)
     notes.append(f"- Pricing sheet has no row for **{name}**: add its blank, base cost and retail {render_shop.money(price)}.")

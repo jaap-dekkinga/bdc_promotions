@@ -54,7 +54,7 @@ Quick Store link; `printful_external_id` (the `#…` ID in the Printful dashboar
 ## Printful
 
 - **Products come from Printful.** The **Printful sync** workflow (daily, or Actions → Printful
-  sync → Run workflow) reads the store and opens a PR that updates prices, adds new Printful
+  sync → Run workflow) reads the store and opens a PR that updates prices (prices always come from the store), adds new Printful
   products as drafts, and re-renders the shop. Nothing changes on bedc.shop until that PR is merged.
 - **New products:** the `printful-product-creator` Claude agent drafts the product, shows the exact
   API call, and creates it only after approval (`scripts/printful_create.py --apply`).
