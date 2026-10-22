@@ -1,6 +1,6 @@
 # Be DC — starter line pricing sheet
 
-For setting up the 7 SKUs in Printful (or Printify/Gelato). Retail prices below already match what's shown on the website — change both together if you adjust one.
+For the SKUs in Printful (live and draft). Retail prices below already match what's shown on the website — change both together if you adjust one.
 
 Costs marked **confirmed** come from Printful's published base pricing (checked Sept 2026). Costs marked **estimate** are typical POD market range for that product category — confirm the real number in Printful's catalog before you finalize retail price, since it varies by exact blank/brand chosen.
 

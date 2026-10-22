@@ -35,3 +35,6 @@
 - Sync against fixtures: price change, new draft product, missing product, 429 retry.
 - Create dry run prints the payload and makes no network write; `--apply` path guarded by the hook (pipe test).
 - Secret scan finds a planted fake token in a temp copy and passes on the repo.
+
+## Update 2026-10-22
+Superseded in part by branch `printful-catalog`: buy links are now `buy_url` per product in `data/products.json` (not `PRINTFUL_LINKS` in main.js), and the sync also matches Printful products by `printful_external_id` or `printful_name`.

@@ -12,6 +12,9 @@ What it changes:
   - a missing product image -> the Printful thumbnail, saved under assets/img/printful/
   - the retail and margin cells in product-pricing-sheet.md
 It never deletes anything. Products missing from Printful are only reported.
+A Printful product is matched to the catalog by printful_id, then by
+printful_external_id (the #... ID in the Printful dashboard), the slug, or
+printful_name. Buy links (buy_url) are never changed: Printful's API has none.
 
 Usage:
   python scripts/printful_sync.py [--summary summary.md]
@@ -147,7 +150,7 @@ def sync(token, log):
         if p.get("printful_id") and p["printful_id"] not in seen:
             notes.append(f"- **{p['title']}** is linked to Printful product {p['printful_id']}, which is gone or ignored in Printful. Still on the site; remove or relink it.")
         elif not p.get("printful_id") and p.get("status") == "live":
-            notes.append(f"- **{p['title']}** isn't linked to a Printful product yet (set `printful_id` or the Printful external ID `{p['slug']}`).")
+            notes.append(f"- **{p['title']}** isn't linked to a Printful product yet (set `printful_external_id` to the #… ID from the Printful dashboard, or `printful_name` to its exact Printful name).")
 
     for p in new:
         sheet = update_sheet(sheet, p["name"], Decimal(p["price"]), notes)
