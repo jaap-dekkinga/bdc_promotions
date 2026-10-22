@@ -17,7 +17,7 @@ You may only write in `../bdc-growth/` (outside the repo; the repo is public on 
 - `marketing-todo.md`: the ranked to-do list (create it if missing).
 
 ## 0. Set up
-1. Read `CLAUDE.md`, `data/products.json`, and `PRINTFUL_LINKS` in `assets/js/main.js`. Count how many products are buyable.
+1. Read `CLAUDE.md`, `data/products.json`, Count the live products with a `buy_url`: those are buyable.
 2. Read the current `../bdc-growth/content-calendar.md`, `marketing-todo.md` and the latest `reports/*.md` so you don't repeat posts or ideas, and use any numbers Jaap recorded.
 3. Use WebSearch to check DC events and dates in the next 6 weeks. Note the source URL for each date you use. If you can't confirm a date, leave the event out.
 

@@ -2,7 +2,7 @@
 
 A single-page static site for **B★DC**, Washington, DC's first city logo and motto:
 the story of the mark, the "Be ___" platform, the DC facts that started the project
-in 2010, a seven-piece print-on-demand starter shop, and a contact form.
+in 2010, a small print-on-demand shop synced from Printful, and a contact form.
 
 No framework, no build step — just `index.html` + `assets/`. Live at https://bedc.shop
 (Hostinger, which pulls `main`); a copy also deploys to GitHub Pages on every push to `main`.
@@ -23,9 +23,8 @@ No framework, no build step — just `index.html` + `assets/`. Live at https://b
 
 ## Two edits before this is fully live
 
-1. **Printful links** — open `assets/js/main.js`, find `PRINTFUL_LINKS` near the top,
-   and paste each product's public URL against the matching slug once your Printful
-   Quick Store is set up. Any slug left `""` shows a **Notify me** button that routes
+1. **Printful links** — in `data/products.json`, set each live product's `buy_url` to its
+   Printful Quick Store link, then run `python scripts/render_shop.py`. Any product left `""` shows a **Notify me** button that routes
    to the contact form instead of a dead link, so the site is safe to publish before
    the store is ready.
 2. **Contact email** — done. The form and the footer link both point to
@@ -34,9 +33,10 @@ No framework, no build step — just `index.html` + `assets/`. Live at https://b
    endpoint so messages land quietly in an inbox instead of opening Mail, see the
    second TODO in `assets/js/main.js`.
 
-Keep `data/products.json` and the hard-coded cards in `index.html` in sync — the JSON
-is the catalog reference (`scripts/add_product.py` appends to it); the HTML is what
-actually renders.
+The shop cards in `index.html` are generated from `data/products.json` by
+`scripts/render_shop.py` (CI fails if they differ). Each product's `buy_url` is its Printful
+Quick Store link; `printful_external_id` (the `#…` ID in the Printful dashboard) or
+`printful_name` tells the sync which Printful product it is.
 
 ## Deploying
 
@@ -54,7 +54,7 @@ actually renders.
 ## Printful
 
 - **Products come from Printful.** The **Printful sync** workflow (daily, or Actions → Printful
-  sync → Run workflow) reads the store and opens a PR that updates prices, adds new Printful
+  sync → Run workflow) reads the store and opens a PR that updates prices (prices always come from the store), adds new Printful
   products as drafts, and re-renders the shop. Nothing changes on bedc.shop until that PR is merged.
 - **New products:** the `printful-product-creator` Claude agent drafts the product, shows the exact
   API call, and creates it only after approval (`scripts/printful_create.py --apply`).
@@ -73,9 +73,9 @@ actually renders.
 ```
 index.html                   the whole site (story, platform, facts, shop, contact)
 assets/css/style.css         brand styles — navy #002664 / red #BB133E
-assets/js/main.js            nav toggle, Printful link config, contact form
+assets/js/main.js            nav toggle, shop buttons (from each card's buy link), contact form
 assets/img/                  real logo, hero, and product images
-data/products.json           catalog reference for the 7 starter SKUs (USD)
+data/products.json           the catalog: live + draft products, buy links, Printful matching (USD)
 scripts/add_product.py       append a product to data/products.json
 product-pricing-sheet.md     SKU costs, retail prices, and margins for Printful (private numbers)
 .github/workflows/static.yml CI validate + GitHub Pages copy

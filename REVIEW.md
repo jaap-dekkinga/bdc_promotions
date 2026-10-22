@@ -11,7 +11,7 @@ Look for these first. They are what actually costs Be DC money or credibility.
 | Area | Failure means… | Example |
 |---|---|---|
 | Product cards, prices, facts | **it lies** | A card says $28, the pricing sheet and Printful say $32. A DC fact that isn't true, or a 2010 statistic presented as current. |
-| Shop buttons, links | **it misroutes** | The hoodie button opens the polo's Printful page. A slug missing from `PRINTFUL_LINKS`, so a live product shows "Notify me". |
+| Shop buttons, links | **it misroutes** | The hoodie button opens the polo's Printful page. A live product whose `buy_url` is missing or wrong, so it shows "Notify me" or opens the wrong page. |
 | Contact form | **it drops a lead** | The mailto address, subject or body is broken, so the message never arrives. |
 | Layout | **it can't be used on a phone** | Horizontal scroll or an unreachable button at ~375px. |
 | Deploy / repo | **it exposes or takes down the shop** | A private file served publicly; a workflow change that skips `validate` or deploys from a branch. |

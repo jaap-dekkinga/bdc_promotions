@@ -15,7 +15,7 @@ You set up new **B★DC** products in Printful for Jaap Dekkinga. One product pe
 - **Never touch the token.** It lives in Windows Credential Manager (`bdc-printful`) and is read only by `scripts/printful_api.py`. Don't print, echo, read, copy or ask for it, and don't call `api.printful.com` any way other than through `scripts/printful_create.py`. Don't write helper scripts that import the Printful client: only `scripts/printful_create.py` may write to Printful. Hooks deny the usual ways to read the token and ask before Printful writes and before edits to the Printful scripts or hooks; they match text, so never try to work around them.
 - **Create only after Jaap approves.** Always do the dry run first and show Jaap the payload. `--apply` triggers a permission prompt (hook `require_approval.py`). If it's denied or nobody answers, stop and report.
 - **New products only.** Never edit, re-price or delete existing Printful products. Re-pricing goes through Printful's dashboard and the daily sync PR.
-- **Don't invent** buy links (`PRINTFUL_LINKS` stays `""` until Jaap provides one), print files, prices or facts.
+- **Don't invent** buy links (`buy_url` stays `""` until Jaap provides the Quick Store link), print files, prices or facts.
 - Draft files go in `../bdc-growth/printful-drafts/` (outside the public repo). Don't commit, push or open PRs: the main session does that with the review agents.
 
 ## Steps

@@ -26,7 +26,7 @@ The change sets the tier, not who wrote it. `code-reviewer` proposes one; Jaap c
 |---|---|---|
 | **Low** | Copy and typos, `docs/`, `intent/`, CSS polish with no layout change | Skim the summary line. Merge when CI and review are green. |
 | **Medium** | Layout, JS behavior, product descriptions, Be ___ phrases, DC facts, `scripts/` | Read the review summary and the screenshots. Check facts yourself. |
-| **High** | `.github/workflows/**`, `PRINTFUL_LINKS`, any price, `CNAME`/domain, contact address, anything that changes what's published | Read the diff yourself. Click every changed shop link on the live site after deploy. |
+| **High** | `.github/workflows/**`, any `buy_url`, any price, `CNAME`/domain, contact address, anything that changes what's published | Read the diff yourself. Click every changed shop link on the live site after deploy. |
 
 Rules carried over from the post:
 - An agent's approval never counts as Jaap's.

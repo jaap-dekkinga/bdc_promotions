@@ -37,3 +37,6 @@ Jaap wants the site to follow what's in Printful, and a Claude agent that can cr
 - [x] Local secret: Windows Credential Manager (Jaap, 2026-10-21)
 - [ ] Is the Printful store an "API / Manual order" store? `POST /store/products` only works for those; Quick Store or Shopify-connected stores may refuse it.
 - [ ] The token pasted in chat on 2026-10-21 must be revoked and replaced by two scoped tokens.
+
+## Update 2026-10-22
+Superseded in part by branch `printful-catalog`: buy links are now `buy_url` per product in `data/products.json` (not `PRINTFUL_LINKS` in main.js), and the sync also matches Printful products by `printful_external_id` or `printful_name`.

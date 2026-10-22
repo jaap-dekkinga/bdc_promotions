@@ -12,6 +12,9 @@ What it changes:
   - a missing product image -> the Printful thumbnail, saved under assets/img/printful/
   - the retail and margin cells in product-pricing-sheet.md
 It never deletes anything. Products missing from Printful are only reported.
+A Printful product is matched to the catalog by printful_id, then by
+printful_external_id (the #... ID in the Printful dashboard), the slug, or
+printful_name. Buy links (buy_url) are never changed: Printful's API has none.
 
 Usage:
   python scripts/printful_sync.py [--summary summary.md]
@@ -31,6 +34,7 @@ ROOT = render_shop.ROOT
 DATA = render_shop.DATA
 SHEET = ROOT / "product-pricing-sheet.md"
 IMAGE_DIR = Path("assets/img/printful")
+MARGIN_FLOOR = 39  # margin as % of the retail price; lower ones are flagged in the PR (add-product skill), not blocked
 
 
 def slugify(text):
@@ -65,10 +69,23 @@ def update_sheet(sheet, name, price, notes):
             continue
         cells[3] = render_shop.money(price)
         cost = re.search(r"\$(\d+(?:\.\d+)?)", cells[2])
-        if cost:
+        estimated = "estimate" in cells[2].lower() or "~" in cells[2]
+        if not cost:
+            notes.append(f"- **{name}**: no base cost in the pricing sheet, so the margin at "
+                         f"{render_shop.money(price)} is unknown. Add the Printful cost.")
+        else:
             margin = price - Decimal(cost.group(1))
+            pct = margin / price * 100 if price else None
             cells[4] = f"${margin:.2f}"
-            cells[5] = f"{(margin / price * 100):.0f}%" if price else "?"
+            cells[5] = f"{pct:.0f}%" if pct is not None else "?"
+            kind = "estimated" if estimated else "base"
+            if pct is not None and pct < MARGIN_FLOOR:
+                notes.append(f"- **{name}**: at the Printful price {render_shop.money(price)} the margin on the retail "
+                             f"price is {pct:.1f}% (over the {kind} ${cost.group(1)} cost), below the {MARGIN_FLOOR}% "
+                             "floor. The store price is used anyway.")
+            elif estimated and pct is not None:
+                notes.append(f"- **{name}**: margin {pct:.1f}% is based on an estimated ${cost.group(1)} cost. "
+                             "Confirm the real Printful cost in the pricing sheet.")
         lines[i] = "| " + " | ".join(cells) + " |"
         return "\n".join(lines)
     notes.append(f"- Pricing sheet has no row for **{name}**: add its blank, base cost and retail {render_shop.money(price)}.")
@@ -80,6 +97,8 @@ def sync(token, log):
     sheet = SHEET.read_text(encoding="utf-8")
     by_id = {p["printful_id"]: p for p in products if p.get("printful_id")}
     by_slug = {p["slug"]: p for p in products}
+    by_ext = {str(p["printful_external_id"]).lstrip("#"): p for p in products if p.get("printful_external_id")}
+    by_name = {p["printful_name"].strip().lower(): p for p in products if p.get("printful_name")}
     changes, new, notes = [], [], []
     seen = set()
 
@@ -93,9 +112,14 @@ def sync(token, log):
         seen.add(pid)
         local = by_id.get(pid)
         if local is None:
-            candidate = by_slug.get(str(info.get("external_id") or ""))
-            if candidate is not None and not candidate.get("printful_id"):
-                local = candidate
+            # Not linked yet: match the Printful external ID (shown as #abc123 in the
+            # dashboard) or the exact Printful product name, set in data/products.json.
+            ext = str(info.get("external_id") or "")
+            for candidate in (by_ext.get(ext), by_slug.get(ext),
+                              by_name.get(str(info.get("name") or "").strip().lower())):
+                if candidate is not None and not candidate.get("printful_id"):
+                    local = candidate
+                    break
         if price is None:
             notes.append(f"- **{info.get('name')}** (Printful {pid}) has no priced variants; skipped.")
             continue
@@ -140,7 +164,7 @@ def sync(token, log):
         if p.get("printful_id") and p["printful_id"] not in seen:
             notes.append(f"- **{p['title']}** is linked to Printful product {p['printful_id']}, which is gone or ignored in Printful. Still on the site; remove or relink it.")
         elif not p.get("printful_id") and p.get("status") == "live":
-            notes.append(f"- **{p['title']}** isn't linked to a Printful product yet (set `printful_id` or the Printful external ID `{p['slug']}`).")
+            notes.append(f"- **{p['title']}** isn't linked to a Printful product yet (set `printful_external_id` to the #… ID from the Printful dashboard, or `printful_name` to its exact Printful name).")
 
     for p in new:
         sheet = update_sheet(sheet, p["name"], Decimal(p["price"]), notes)
@@ -158,7 +182,7 @@ def sync(token, log):
         summary += [f"- **{p['title']}** → slug `{p['slug']}`, {render_shop.money(p['price'])}" for p in new]
     if notes:
         summary += ["", "### Needs a look"] + notes
-    summary += ["", "Buy buttons are not changed: links stay in `PRINTFUL_LINKS` in `assets/js/main.js`."]
+    summary += ["", "Buy buttons are not changed: links are the `buy_url` fields in `data/products.json`, set by hand (Printful's API has no buy links)."]
     log("\n".join(summary))
     return "\n".join(summary) + "\n"
 
