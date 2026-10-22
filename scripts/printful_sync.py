@@ -83,7 +83,7 @@ def update_sheet(sheet, name, price, notes):
                 notes.append(f"- **{name}**: at the Printful price {render_shop.money(price)} the margin on the retail "
                              f"price is {pct:.1f}% (over the {kind} ${cost.group(1)} cost), below the {MARGIN_FLOOR}% "
                              "floor. The store price is used anyway.")
-            elif estimated:
+            elif estimated and pct is not None:
                 notes.append(f"- **{name}**: margin {pct:.1f}% is based on an estimated ${cost.group(1)} cost. "
                              "Confirm the real Printful cost in the pricing sheet.")
         lines[i] = "| " + " | ".join(cells) + " |"
