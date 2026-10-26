@@ -6,18 +6,14 @@ Costs marked **confirmed** come from Printful's published base pricing (checked 
 
 | Product | Suggested blank | Base cost | Retail price | Margin | Margin % |
 |---|---|---|---|---|---|
-| Classic Tee | Bella+Canvas 3001 | $11.50 *(confirmed)* | $30 | $18.50 | 62% |
-| T-Shirt — Heather Grey | Bella+Canvas 3001, Heather | ~$12.50 *(estimate — heather colors often run ~$1 more)* | $30 | $17.50 | 58% |
-| Hoodie | Gildan 18500 | $26.00 *(confirmed)* | $52 | $26.00 | 50% |
-| Polo | Gildan / Port Authority polo | ~$19 *(estimate)* | $40 | $21.00 | 53% |
-| Snapback Hat (embroidered) | Structured twill cap | ~$17 *(estimate — embroidery setup can add a one-time digitizing fee)* | $28 | $11.00 | 39% |
-| Tote Bag | Canvas tote | ~$10 *(estimate)* | $22 | $12.00 | 55% |
-| Mug (11oz) | Ceramic mug | $5.95 *(confirmed)* | $16 | $10.05 | 63% |
-| Baseball Cap | Printful baseball cap | ? *(add from Printful)* | $28 *(placeholder; the sync sets the real price)* | ? | ? |
+| Classic Tee | Gildan 5000 | $9.44 *(confirmed, Printful dashboard Oct 2026)* | $10.50 | $1.06 | 10% |
+| Hoodie | Cotton Heritage M2580 | $27.84 *(confirmed, Printful dashboard Oct 2026)* | $36.50 | $8.66 | 24% |
+| Snapback Hat (embroidered) | Yupoong 6089M | $17.23 *(confirmed, Printful dashboard Oct 2026)* | $25 | $7.77 | 31% |
+| Baseball Cap | Yupoong 6245CM | $14.94 *(confirmed, Printful dashboard Oct 2026)* | $25 | $10.06 | 40% |
 
 ## Notes
 
 - Prices are set for a lifestyle-brand feel, not souvenir-stand pricing — see the storefront scan for why (Boat House Apparel sustains $44–$138 with far less brand story than Be DC has).
 - Shipping isn't in this table — Printful charges it separately per order; the site already promises free shipping over $50, which most orders of 2+ items will clear.
-- Once your Printful store is set up, come back and tighten the two "estimate" costs (polo, hat) with the real numbers — they change the margin most.
+- Costs are now the Printful prices from the dashboard (lowest variant). Hoodie, Snapback Hat and Classic Tee are below the 39% margin floor at the current Printful retail prices.
 - Hat embroidery sometimes has a one-time digitizing fee per design (~$10–15) the first time you upload the B★DC logo — a one-off setup cost, not per-unit.
