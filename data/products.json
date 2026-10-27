@@ -25,7 +25,7 @@
     "be": "Be AdMo",
     "description": "Unisex classic tee with the B★ADMO neighborhood mark. Printed to order.",
     "dc_fact": "Adams Morgan Day, held every September since 1978, is DC's longest-running neighborhood street festival.",
-    "price": "20.00",
+    "price": "18.42",
     "currency": "USD",
     "image": "assets/img/printful/tee-admo.jpg",
     "alt": "Dark heather tee reading B★ADMO",
@@ -100,6 +100,22 @@
     "printful_id": 484468518,
     "buy_url": "https://bedc.printful.me/product/be-dc-t-shirt-version-b",
     "printful_external_id": "6adb9e8c12b737"
+  },
+  {
+    "id": "crop-top",
+    "slug": "crop-top",
+    "status": "live",
+    "title": "B★DC Crop Top",
+    "name": "Crop Top",
+    "be": "Be bold",
+    "description": "All-over print crop top with the flag version of the B★DC mark. Printed to order.",
+    "dc_fact": "DC's cherry trees were a gift from the city of Tokyo, first planted in 1912.",
+    "price": "30.50",
+    "currency": "USD",
+    "image": "assets/img/printful/crop-top.jpg",
+    "alt": "White B★DC crop top with the flag-striped mark",
+    "printful_id": 486445978,
+    "buy_url": "https://bedc.printful.me/product/crop-top"
   },
   {
     "id": "hoodie",
