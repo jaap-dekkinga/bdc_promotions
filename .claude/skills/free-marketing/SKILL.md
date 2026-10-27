@@ -5,14 +5,14 @@ description: Playbook for free and low-cost marketing of B★DC (Be DC) merch: w
 
 # Free and low-cost marketing for B★DC
 
-Budget: **$0** unless Jaap approves a specific spend. Agents plan and draft; **Jaap posts and sends**. Brand rules: `be-dc-brand` skill (it wins on any conflict).
+Budget: **$0** unless the owner approves a specific spend. Agents plan and draft; **the owner posts and sends**. Brand rules: `be-dc-brand` skill (it wins on any conflict).
 
 ## Check this first
 - **Can people buy?** Read `buy_url` in `data/products.json`. While a product's link is `""`, posts about it must ask people to tap "Notify me" / email, not "shop now". If no product is buyable, the top to-do is always "Get Printful links live", and posts aim at building the email list and partners.
 - **Does the link preview work?** If `index.html` has no Open Graph image, every shared link looks bare. Flag it to `site-improver` before a big push.
 
 ## Building blocks
-Every post = one **Be ___ phrase** + one **DC fact** (checkable, one sentence, dated if it changes) + one image from `assets/img/` (or a photo Jaap takes) + one link.
+Every post = one **Be ___ phrase** + one **DC fact** (checkable, one sentence, dated if it changes) + one image from `assets/img/` (or a photo the owner takes) + one link.
 
 | Product | Phrase | Image |
 |---|---|---|
@@ -37,8 +37,8 @@ Links: `https://bedc.shop/?utm_source=<channel>&utm_medium=social&utm_campaign=<
 | Nextdoor, neighborhood Facebook groups, listservs | Neighbors buy local | $0 / S | Only where self-promotion is allowed; read the group rules first. |
 | Pinterest | Long-lived search traffic for DC gifts | $0 / S | Pins per product, "Washington DC gift" boards. |
 | Local press & newsletters | Credibility, one-off spikes | $0 / M | Pitch the story (DC's first city mark, the 2010 research, the Constitution "B"), not the product. Hand the outreach to `collaborator-outreach`. |
-| Email list | The only channel Jaap owns | $0 / M | Every post points to "Notify me" until a list tool is approved via an intent. |
-| Pop-ups, markets, events | Sell in person, photos for posts | low $ / L | Ask before spending: table fees need Jaap's OK. |
+| Email list | The only channel the owner owns | $0 / M | Every post points to "Notify me" until a list tool is approved via an intent. |
+| Pop-ups, markets, events | Sell in person, photos for posts | low $ / L | Ask before spending: table fees need the owner's OK. |
 
 ## DC calendar hooks
 Plan around these; **look up this year's exact dates** before scheduling and never invent an event.
@@ -58,11 +58,11 @@ Plan around these; **look up this year's exact dates** before scheduling and nev
 - **Behind the scenes:** the 2010 research, the trademark *pending* (no ®, no legal claims).
 
 ## Rules
-- No paid ads, giveaways with purchase requirements, or bought followers without Jaap's OK.
+- No paid ads, giveaways with purchase requirements, or bought followers without the owner's OK.
 - No posting, DMs or emails by the agent. Drafts only.
 - Don't claim DC.gov, a team, an event or a business endorses Be DC.
 - Facts: stable history preferred; changing numbers need a source and year; 2010 stats framed as "when the project started in 2010…".
 - All plans, calendars and drafts go to `../bdc-growth/`, never into the public repo.
 
 ## Measuring (free)
-Weekly, ask Jaap for: followers per channel, Instagram/TikTok views on the top post, "Notify me" emails received (Gmail search `to:bdcpromotions@gmail.com newer_than:7d`), and Printful orders once live. Keep the numbers in the weekly report; drop a channel after 6 weeks of nothing.
+Weekly, ask the owner for: followers per channel, Instagram/TikTok views on the top post, "Notify me" emails received (Gmail search `to:bdcpromotions@gmail.com newer_than:7d`), and Printful orders once live. Keep the numbers in the weekly report; drop a channel after 6 weeks of nothing.

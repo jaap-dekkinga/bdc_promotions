@@ -2,7 +2,7 @@
 
 Adapted on 2026-10-21 from "Solving code review at Anthropic" (claude.dev blog, Oct 15 2026), scaled from Anthropic's monorepo to one owner and one static site.
 
-**Goal:** Jaap spends as little time as possible reviewing, **without more broken deploys or rollbacks than before**. The question for each change isn't "did a human read every line?" but "what could go wrong, and which check (automated or Jaap) is the right one to catch it?"
+**Goal:** the owner spends as little time as possible reviewing, **without more broken deploys or rollbacks than before**. The question for each change isn't "did a human read every line?" but "what could go wrong, and which check (automated or the owner) is the right one to catch it?"
 
 ## The layers
 
@@ -12,34 +12,34 @@ Adapted on 2026-10-21 from "Solving code review at Anthropic" (claude.dev blog, 
 | 2 | **Bug review**: `code-reviewer` subagent (or `/code-review`) against `REVIEW.md` | Claude | before opening the PR, again after fixes | Open **Important** findings |
 | 3 | **Security review**: `/security-review` in Claude Code | Claude | Medium and High tier | Open findings |
 | 4 | **CI**: the `validate` job in `static.yml` | GitHub | every push / PR | Yes (required check) |
-| 5 | **Risk-tiered human check** | Jaap | before merging | High tier |
+| 5 | **Risk-tiered human check** | The owner | before merging | High tier |
 | 6 | **Deploy from `main` only**, after `validate` | GitHub | on merge | — |
-| 7 | **Detect and roll back**: revert the PR; Pages redeploys in about a minute | Jaap / Claude | after deploy | — |
+| 7 | **Detect and roll back**: revert the PR; Pages redeploys in about a minute | The owner / Claude | after deploy | — |
 
 Every Important or Security finding must end **fixed**, or **closed with a one-line reason** in the PR. Nothing is silently ignored.
 
 ## Risk tiers
 
-The change sets the tier, not who wrote it. `code-reviewer` proposes one; Jaap can raise it.
+The change sets the tier, not who wrote it. `code-reviewer` proposes one; the owner can raise it.
 
-| Tier | Touches | Jaap's part |
+| Tier | Touches | The owner's part |
 |---|---|---|
 | **Low** | Copy and typos, `docs/`, `intent/`, CSS polish with no layout change | Skim the summary line. Merge when CI and review are green. |
 | **Medium** | Layout, JS behavior, product descriptions, Be ___ phrases, DC facts, `scripts/` | Read the review summary and the screenshots. Check facts yourself. |
 | **High** | `.github/workflows/**`, any `buy_url`, any price, `CNAME`/domain, contact address, anything that changes what's published | Read the diff yourself. Click every changed shop link on the live site after deploy. |
 
 Rules carried over from the post:
-- An agent's approval never counts as Jaap's.
-- If a commit is added after Jaap looked (an agent fix, a merge), a High-tier change needs another look.
+- An agent's approval never counts as the owner's.
+- If a commit is added after the owner looked (an agent fix, a merge), a High-tier change needs another look.
 - **Circuit breaker:** after any revert or live-site breakage, treat the next 5 PRs one tier higher.
 
 ## The loop for one PR
 
 1. Claude builds and verifies (layer 1), then runs `code-reviewer` with the changed files and the intent folder.
 2. Claude fixes Important findings, then re-runs the reviewer as **round 2, new changes only**, passing the previous findings so nothing repeats.
-3. **Cap: 3 rounds.** If Important findings are still open after round 3, stop and rethink the approach with Jaap. At Anthropic, about 59% of what kept being flagged in long loops was old code, not new bugs.
+3. **Cap: 3 rounds.** If Important findings are still open after round 3, stop and rethink the approach with the owner. At Anthropic, about 59% of what kept being flagged in long loops was old code, not new bugs.
 4. Claude opens the PR using the template (Testing, Risk tier, How to revert, Outside the repo).
-5. CI runs. Jaap does his tier's part and merges.
+5. CI runs. The owner does their tier's part and merges.
 
 **Deep review** (High tier, or anything touching money): run `code-reviewer` **twice in parallel**, in separate contexts, and keep only the findings both report (findings only one run reports go to Questions). This is the one-person version of the post's "several hunters, verifiers vote".
 
@@ -63,7 +63,7 @@ Settings → Branches → add a rule for `main`:
 
 Optional later: run Claude in GitHub on every PR with `anthropics/claude-code-action`, pointed at `REVIEW.md` (needs an `ANTHROPIC_API_KEY` repo secret).
 
-## What only Jaap does
+## What only the owner does
 
 - **Should we build this at all?** Direction, taste and scope belong in the intent, before code exists. Closing a PR is cheap.
 - **Money and exposure:** prices, Printful links, what gets published, the domain.

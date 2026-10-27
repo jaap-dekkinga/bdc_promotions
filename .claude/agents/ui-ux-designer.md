@@ -43,7 +43,7 @@ Stay in your lane: if you notice a functional bug (broken JS, wrong price or lin
 ## 3. Verify each finding
 Re-check the exact HTML/CSS before reporting, including the `@media` rule that applies at the width in question and any later rule that overrides it.
 Keep a finding only if you can point to `file:line` or a screenshot area and name who is affected and how. Otherwise move it to **Check visually**.
-Recommendations that would bend a be-dc-brand rule go under **Brand questions for Jaap**, never into the main list.
+Recommendations that would bend a be-dc-brand rule go under **Brand questions for the owner**, never into the main list.
 
 ## 4. Report
 
@@ -71,7 +71,7 @@ Screenshots reviewed: <375 / 768 / 1280 / none>. Regressions vs before: <n or n/
 ### For code-reviewer
 - <functional bugs noticed, one line each>
 
-### Brand questions for Jaap
+### Brand questions for the owner
 - <ideas that would change a brand rule, with the trade-off>
 
 ### Top 3 next steps

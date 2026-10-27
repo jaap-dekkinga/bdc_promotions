@@ -1,9 +1,9 @@
-"""PreToolUse hook: Jaap must approve every email send, every deploy of
+"""PreToolUse hook: the owner must approve every email send, every deploy of
 bedc.shop, and every new Printful product. Nothing else asks.
 
 Claude Code pipes the tool call as JSON on stdin. If the call would send an
 email, change `main` (which bedc.shop pulls) or create a Printful product,
-this prints a permissionDecision of "ask", so Claude Code stops and asks Jaap,
+this prints a permissionDecision of "ask", so Claude Code stops and asks the owner,
 even in auto mode or a scheduled run. Everything else passes through
 untouched (no output, exit 0). If the input can't be read, it asks too.
 
@@ -92,12 +92,12 @@ def check(call):
     command = CONTINUATION.sub(" ", str(command or ""))
 
     if EMAIL_TOOL.search(tool) or EMAIL_CMD.search(command):
-        ask("Sending email needs Jaap's OK (hook: .claude/hooks/require_approval.py). Drafts are fine; sending is not.")
+        ask("Sending email needs the owner's OK (hook: .claude/hooks/require_approval.py). Drafts are fine; sending is not.")
     if CREATE_AND_APPLY.search(command):
-        ask("Creating a Printful product needs Jaap's OK. Check the dry-run payload first "
+        ask("Creating a Printful product needs the owner's OK. Check the dry-run payload first "
             "(hook: .claude/hooks/require_approval.py).")
     if DEPLOY_TOOL.search(tool) or DEPLOY_CMD.search(command) or push_reaches_main(command):
-        ask("This changes main, which bedc.shop deploys from, so it needs Jaap's OK "
+        ask("This changes main, which bedc.shop deploys from, so it needs the owner's OK "
             "(hook: .claude/hooks/require_approval.py).")
 
 

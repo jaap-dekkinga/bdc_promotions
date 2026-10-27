@@ -1,6 +1,6 @@
 # Publish only the storefront, not the whole repo
 
-- **Author:** Jaap Dekkinga (drafted with Claude)
+- **Author:** the owner (drafted with Claude)
 - **Date:** 2026-10-21
 - **Status:** accepted (implemented on branch growth-agents)
 - **Source:** site problem
@@ -14,7 +14,7 @@ Anyone, including competitors and partners being pitched, can read internal pric
 
 ## Proposed outcome
 The live site serves only what a shopper needs: `index.html`, `assets/`, and anything `index.html` actually loads.
-Internal files stay in the repo for Jaap and Claude but return 404 on the live site.
+Internal files stay in the repo for the owner and Claude but return 404 on the live site.
 
 ## Affected users and systems
 - `.github/workflows/static.yml` (the `deploy` job)

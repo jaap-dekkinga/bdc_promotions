@@ -5,7 +5,7 @@ description: Be DC (B★DC) brand rules. Use whenever writing or changing anythi
 
 # Be DC brand rules
 
-Source of truth: `what-is-be-dc.md` in the Be DC project folder. Owner: Jaap Dekkinga. Update this skill only with his sign-off.
+Source of truth: `what-is-be-dc.md` in the Be DC project folder. Owner: the B★DC founder. Update this skill only with the owner's sign-off.
 
 ## The mark
 - Written **B★DC** (B, five-pointed star, DC). Said "Be DC". Never "BDC" or "B-DC" in customer copy.
