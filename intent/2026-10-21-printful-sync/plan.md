@@ -26,9 +26,9 @@
 
 ## Risks
 - Rendering changes the shop HTML: compare old vs new card HTML; screenshot at 375 and 1280.
-- A sync PR with a wrong price: Jaap reviews every PR; price changes are listed in the PR body.
+- A sync PR with a wrong price: the owner reviews every PR; price changes are listed in the PR body.
 - Token leak: env/Credential Manager only, never logged; hooks + CI scan + GitHub push protection.
-- Can't test against the real API in this session (the pasted token must be revoked, and I won't use it). First real run is Jaap's "Run workflow" after he adds the new read-only secret.
+- Can't test against the real API in this session (the pasted token must be revoked, and I won't use it). First real run is the owner's "Run workflow" after the owner adds the new read-only secret.
 
 ## Proof
 - `render_shop.py --check` passes on `main` content; visual check unchanged at 375/1280.

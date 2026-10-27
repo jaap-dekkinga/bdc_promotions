@@ -1,7 +1,7 @@
 name: Printful sync
 
 # Pulls the Printful store into data/products.json, the shop cards and the
-# pricing sheet, and opens a PR for Jaap to review. Nothing goes live until
+# pricing sheet, and opens a PR for the owner to review. Nothing goes live until
 # that PR is merged (bedc.shop pulls main).
 #
 # Needs:

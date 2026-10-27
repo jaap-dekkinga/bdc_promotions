@@ -6,7 +6,7 @@ catalog and the shop. Used by the printful-product-creator agent.
 Without --apply this is a dry run: it checks the draft against the brand
 rules and the Printful catalog, and prints the exact API call. Nothing is
 created. With --apply it calls POST /store/products (a hook makes Claude ask
-Jaap first), adds the product to data/products.json and re-renders the shop.
+the owner first), adds the product to data/products.json and re-renders the shop.
 The token needs scope sync_products (write); see scripts/printful_api.py.
 
 Draft file (JSON), for example ../bdc-growth/printful-drafts/sticker.json:
@@ -127,7 +127,7 @@ def main():
         body = payload(draft)
         print("\nPOST https://api.printful.com/store/products\n" + json.dumps(body, indent=2, ensure_ascii=False))
         if not args.apply:
-            print("\nDry run: nothing was created. Re-run with --apply after Jaap approves.")
+            print("\nDry run: nothing was created. Re-run with --apply after the owner approves.")
             return
 
         token = pf.get_token()

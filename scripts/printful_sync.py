@@ -2,7 +2,7 @@
 """
 Pull the Printful store into data/products.json, the shop cards and the
 pricing sheet. Run by .github/workflows/printful-sync.yml, which turns any
-change into a PR for Jaap to review. Needs only a read-only token
+change into a PR for the owner to review. Needs only a read-only token
 (scope sync_products/read). See scripts/printful_api.py for where it comes from.
 
 What it changes:

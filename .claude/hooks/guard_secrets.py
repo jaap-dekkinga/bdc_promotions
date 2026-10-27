@@ -7,7 +7,7 @@ anywhere here is a leaked token. This denies a tool call when:
     a private key, or "Authorization: Bearer <literal>");
   - a command tries to read or print the stored Printful token
     (Credential Manager "bdc-printful", $PRINTFUL_TOKEN, CredRead...), or to
-    store a secret (`gh secret set`, `cmdkey /pass`): only Jaap does that.
+    store a secret (`gh secret set`, `cmdkey /pass`): only the owner does that.
     Listing the environment (`env`, `printenv`, `gci env:`) counts too;
   - a code file other than the three Printful scripts and these hooks would
     contain code that reads the token or writes to Printful (the client
@@ -140,7 +140,7 @@ def main():
         command = tool_input.get("command", "") if isinstance(tool_input, dict) else ""
         if READS_TOKEN.search(str(command)):
             deny("Commands may not read, print or store the Printful token. Run scripts/printful_sync.py "
-                 "or printful_create.py without mentioning it; only Jaap stores it.")
+                 "or printful_create.py without mentioning it; only the owner stores it.")
     if tool in WRITE_TOOLS and isinstance(tool_input, dict):
         path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
         if os.path.normcase(os.path.abspath(path)) not in TOKEN_CODE_FILES and not is_prose(path):

@@ -6,12 +6,12 @@ description: Rules and templates for reaching potential B★DC (Be DC) collabora
 # Collaborator outreach for B★DC
 
 Goal: a few real relationships with DC people and places that make B★DC visible, not volume.
-Agents research and write **Gmail drafts**. **Jaap reviews and sends every email.** A hook (`.claude/hooks/require_approval.py`) forces a prompt on mail-send tools and commands. It can't see browser clicks, so never open Gmail on the web to send.
+Agents research and write **Gmail drafts**. **The owner reviews and sends every email.** A hook (`.claude/hooks/require_approval.py`) forces a prompt on mail-send tools and commands. It can't see browser clicks, so never open Gmail on the web to send.
 
 ## Where things live (private, outside the public repo)
 - `../bdc-growth/prospects.csv`: columns `name,segment,website,public_contact,contact_source_url,why_fit,proposed_be_phrase,offer,status,first_contact,last_contact,next_step,notes`
 - `../bdc-growth/outreach-log.md`: one line per action, newest first.
-- `status` values: `researched` → `drafted` → `sent` (only Jaap sets this, or it's inferred from Gmail Sent) → `replied` → `talking` → `partner` / `closed`.
+- `status` values: `researched` → `drafted` → `sent` (only the owner sets this, or it's inferred from Gmail Sent) → `replied` → `talking` → `partner` / `closed`.
 
 ## Segments and what to offer
 | Segment | Examples of who | Offer that fits | Proposed phrase idea |
@@ -30,7 +30,7 @@ Phrases are **proposals** to the partner. Never say or imply a partner endorses 
 - Before adding anyone, search `prospects.csv` and Gmail (`search_threads` for their domain or name) so nobody is contacted twice.
 
 ## Email rules
-- From B★DC (bdcpromotions@gmail.com), signed by Jaap Dekkinga, founder of B★DC. Honest about who Jaap is and that it's a small project.
+- From B★DC (bdcpromotions@gmail.com), signed by the founder of B★DC with their first name. Honest about who they are and that it's a small project.
 - ≤ 120 words. Subject ≤ 7 words, specific to them, no clickbait, no "Re:" tricks.
 - Structure: one line on why *them* (something specific and true from their site) → what B★DC is in one sentence → one concrete offer from the table → one easy ask (a 15-minute call or "can I drop off a sample?") → link to https://bedc.shop.
 - End with: "If this isn't for you, just say so and I won't follow up."
@@ -42,8 +42,8 @@ Phrases are **proposals** to the partner. Never say or imply a partner endorses 
 Subject: A DC mug for your counter?
 
 Hi <name>,
-I love that <shop> stocks <specific local thing>. I'm Jaap, and I make B★DC, a city logo for Washington where the star stands for any word: Be awake, Be seen, Be DC.
+I love that <shop> stocks <specific local thing>. I'm <first name>, and I make B★DC, a city logo for Washington where the star stands for any word: Be awake, Be seen, Be DC.
 Would you try a small consignment of B★DC mugs and totes by the register? No cost to you; I'd bring them by and set up a little card.
 Could I drop off a sample next week? https://bedc.shop
 If this isn't for you, just say so and I won't follow up.
-Jaap Dekkinga, B★DC
+<first name>, B★DC

@@ -10,7 +10,7 @@ No framework, no build step — just `index.html` + `assets/`. Live at https://b
 ## What's real vs. placeholder
 
 - **Real:** the logo files, product photos, and lifestyle photography (from the Be DC
-  project folder), the origin story in Jaap's own words, and the 2010 DC research
+  project folder), the origin story in the founder's own words, and the 2010 DC research
   figures — honestly framed as *why the project started*, not current-year stats.
 - **Per-product content:** every card carries its own `Be ___` phrase and a "Did you
   know" DC fact, the way I LOVE NY packs a fact card with each item and DCMetroStore
@@ -58,7 +58,7 @@ Quick Store link; `printful_external_id` (the `#…` ID in the Printful dashboar
   products as drafts, and re-renders the shop. Nothing changes on bedc.shop until that PR is merged.
 - **New products:** the `printful-product-creator` Claude agent drafts the product, shows the exact
   API call, and creates it only after approval (`scripts/printful_create.py --apply`).
-- **The token is never in this repo.** One-time setup, done by Jaap:
+- **The token is never in this repo.** One-time setup, done by the owner:
   1. In Printful (Settings → API → Tokens), create two private tokens: one with only
      `sync_products/read` (for GitHub), one with `sync_products` (for this PC).
   2. GitHub: `gh secret set PRINTFUL_TOKEN` and paste the read-only token at the prompt

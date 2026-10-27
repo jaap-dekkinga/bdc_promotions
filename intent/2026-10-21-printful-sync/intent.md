@@ -1,18 +1,18 @@
 # Pull the shop from Printful, and let an agent create products safely
 
-- **Author:** Jaap Dekkinga (drafted with Claude)
+- **Author:** the owner (drafted with Claude)
 - **Date:** 2026-10-21
 - **Status:** accepted
 - **Source:** idea
 
 ## Problem
 The 7 shop cards are hard-coded in `index.html`, with the same data again in `data/products.json` and `product-pricing-sheet.md`. Prices and products drift ("catalog drift" in CLAUDE.md). Adding a product means editing three files by hand and creating it in Printful separately.
-Jaap wants the site to follow what's in Printful, and a Claude agent that can create new Printful products. The Printful token must stay secret: the repo is public, and bedc.shop is a static site with no backend.
+The owner wants the site to follow what's in Printful, and a Claude agent that can create new Printful products. The Printful token must stay secret: the repo is public, and bedc.shop is a static site with no backend.
 
 ## Proposed outcome
-- A scheduled GitHub Action (daily + "Run workflow" button) reads the Printful store with a **read-only** token kept in GitHub Secrets. It opens a PR that updates prices and new products in `data/products.json`, the shop cards in `index.html` and the retail column of the pricing sheet. Jaap merges; Hostinger pulls `main`.
+- A scheduled GitHub Action (daily + "Run workflow" button) reads the Printful store with a **read-only** token kept in GitHub Secrets. It opens a PR that updates prices and new products in `data/products.json`, the shop cards in `index.html` and the retail column of the pricing sheet. The owner merges; Hostinger pulls `main`.
 - The shop cards are generated from `data/products.json`, so the page and the catalog can't drift. CI fails if they do.
-- A `printful-product-creator` agent drafts a new product (Be ___ phrase, DC fact, blank, price, print file) and creates it in Printful only after Jaap approves the exact call. It uses a **write** token kept in Windows Credential Manager.
+- A `printful-product-creator` agent drafts a new product (Be ___ phrase, DC fact, blank, price, print file) and creates it in Printful only after the owner approves the exact call. It uses a **write** token kept in Windows Credential Manager.
 - No token ever appears in the repo, the browser, logs, or chat.
 
 ## Affected users and systems
@@ -24,7 +24,7 @@ Jaap wants the site to follow what's in Printful, and a Claude agent that can cr
 - Brand: `be-dc-brand`. Every product still needs a Be ___ phrase and one DC fact; products without them don't show.
 - Everything in the repo is public. Tokens live only in GitHub Secrets and Credential Manager.
 - Buy-button links stay manual in `PRINTFUL_LINKS` (Printful's API doesn't return a storefront URL). Don't invent them.
-- Jaap approves every Printful write and every merge.
+- The owner approves every Printful write and every merge.
 
 ## Out of scope
 - Live (real-time) product fetching in the browser.
@@ -32,9 +32,9 @@ Jaap wants the site to follow what's in Printful, and a Claude agent that can cr
 - Editing or deleting existing Printful products from the agent.
 
 ## Open questions
-- [x] Sync method: scheduled GitHub Action → PR (Jaap, 2026-10-21)
-- [x] Agent autonomy: draft, Jaap approves each create (Jaap, 2026-10-21)
-- [x] Local secret: Windows Credential Manager (Jaap, 2026-10-21)
+- [x] Sync method: scheduled GitHub Action → PR (the owner, 2026-10-21)
+- [x] Agent autonomy: draft, the owner approves each create (the owner, 2026-10-21)
+- [x] Local secret: Windows Credential Manager (the owner, 2026-10-21)
 - [ ] Is the Printful store an "API / Manual order" store? `POST /store/products` only works for those; Quick Store or Shopify-connected stores may refuse it.
 - [ ] The token pasted in chat on 2026-10-21 must be revoked and replaced by two scoped tokens.
 

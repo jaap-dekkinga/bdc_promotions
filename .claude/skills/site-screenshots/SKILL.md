@@ -22,7 +22,7 @@ Name files `<width>.png`, plus a `before-` prefix for the version on `main` when
    npx playwright screenshot --full-page --viewport-size=768,1024 http://localhost:3000 "$OUT/768.png"
    npx playwright screenshot --full-page --viewport-size=1280,800 http://localhost:3000 "$OUT/1280.png"
    ```
-   - **On Jaap's computer:** the first time, run `npx playwright install chromium`.
+   - **On the owner's computer:** the first time, run `npx playwright install chromium`.
    - **In the cloud workspace:** use the preinstalled `playwright` command instead of `npx playwright` (npx can pull a version that doesn't match the installed browser), and don't run the install.
    If Playwright isn't available at all, use a browser tool: open http://localhost:3000, resize to each width, and capture the full page.
 3. For a section close-up (e.g. the shop grid), also capture just that section: open the page at `#shop` and take a viewport screenshot.

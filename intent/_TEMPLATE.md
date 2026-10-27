@@ -6,7 +6,7 @@
 - **Source:** idea | customer message | partner request | site problem
 
 ## Problem
-What can't be done today, who is affected (shoppers, partners, Jaap), and what it costs: lost sales, time, credibility.
+What can't be done today, who is affected (shoppers, partners, the owner), and what it costs: lost sales, time, credibility.
 
 ## Proposed outcome
 What should be true when this is done, in plain words. One to three sentences someone could check against the live site.

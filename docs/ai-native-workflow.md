@@ -8,7 +8,7 @@ so this keeps the parts that pay off at this size and says plainly what to skip.
 
 Claude writes code faster than one person can plan, check and ship it, so the slow parts become deciding *what* to build and checking *that it's right*.
 The playbook's answer: every step ends in a small file committed to the repo (`intent.md` → `spec.md` → `plan.md` → code + tests → PR with review),
-and the next step reads it. Git then records who asked for what, what Claude produced, and who approved it. Jaap stays the decision-maker; Claude does the drafting and the checking.
+and the next step reads it. Git then records who asked for what, what Claude produced, and who approved it. The owner stays the decision-maker; Claude does the drafting and the checking.
 
 ## The loop, for one change
 
@@ -54,7 +54,7 @@ Small fixes (a typo, one price) can skip 1–2 and go straight to plan mode. Use
 | `.github/workflows/static.yml` | CI/CD integration | Already in place: validate on every push and PR, deploy only from `main` after validation. Publishes only `index.html` + `assets/`. |
 | `.claude/agents/site-improver.md` | Stage 6 (maintain) | Weekly live check + SEO/link previews; writes up to 3 draft intents. |
 | `.claude/agents/marketing-planner.md` + `skills/free-marketing/` | — | $0 marketing: two-week content calendar and to-dos in `../bdc-growth/`. |
-| `.claude/agents/collaborator-outreach.md` + `skills/partner-outreach/` | — | DC collaborator research, prospect list and Gmail drafts. Jaap sends. |
+| `.claude/agents/collaborator-outreach.md` + `skills/partner-outreach/` | — | DC collaborator research, prospect list and Gmail drafts. The owner sends. |
 | `.claude/settings.json` + `.claude/hooks/require_approval.py` | Hooks | Forces a prompt before any email send and before any push, merge or workflow run. |
 
 ## Adopt now, later, or skip
@@ -64,7 +64,7 @@ Small fixes (a typo, one price) can skip 1–2 and go straight to plan mode. Use
 - Plan mode as the default start for any code change.
 - Intent folders for anything non-trivial.
 - The skills in `.claude/skills/` and the verifier.
-- **Hooks** in `.claude/settings.json` (in place): `require_approval.py` asks Jaap before any email send or any push/merge/workflow run; `require_reviews.py` blocks `gh pr create` until `verifier` and `code-reviewer` have run on the branch. A hook prints `permissionDecision: "ask"` or `"deny"` with a reason. Skills are advice; hooks are enforced.
+- **Hooks** in `.claude/settings.json` (in place): `require_approval.py` asks the owner before any email send or any push/merge/workflow run; `require_reviews.py` blocks `gh pr create` until `verifier` and `code-reviewer` have run on the branch. A hook prints `permissionDecision: "ask"` or `"deny"` with a reason. Skills are advice; hooks are enforced.
 - Work on a branch and merge through a PR, even solo. It gives CI a chance to fail before the live site does, and the PR is the record.
 
 **Later (when it's worth an hour)**

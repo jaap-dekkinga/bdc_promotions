@@ -134,7 +134,7 @@ def request(method, path, body=None, token=None, auth=True, retries=4, allow_wri
     """Call the Printful API and return the "result" part of the response.
 
     Only GET is allowed unless the caller passes allow_write=True; only
-    printful_create.py --apply does, after Jaap's approval."""
+    printful_create.py --apply does, after the owner's approval."""
     if not path.startswith("/"):
         raise PrintfulError(f"bad API path: {path!r}")
     if method != "GET" and not allow_write:

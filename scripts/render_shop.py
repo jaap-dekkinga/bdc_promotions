@@ -77,7 +77,7 @@ def cards(products):
             raise ValueError(f"{p['slug']}: image must be under assets/ (bedc.shop serves nothing else)")
         buy_url = (p.get("buy_url") or "").strip()
         if buy_url and not buy_url.startswith("https://"):
-            raise ValueError(f"{p['slug']}: buy_url must be an https:// link (Jaap's real Printful link)")
+            raise ValueError(f"{p['slug']}: buy_url must be an https:// link (the owner's real Printful link)")
         out.append(CARD.format(
             slug=p["slug"], title=attr(p["title"]), buy=f' data-buy-url="{attr(buy_url)}"' if buy_url else "",
             image=attr(p["image"]),

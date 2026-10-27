@@ -1,7 +1,7 @@
 # REVIEW.md — review policy for the Be DC storefront
 
 Read by the `code-reviewer` subagent, by `/code-review` in Claude Code, and by any Claude PR review in GitHub.
-Owner: Jaap. Findings inform the decision; they never approve. An agent's "looks good" never counts as a human approval.
+Owner: the repo owner. Findings inform the decision; they never approve. An agent's "looks good" never counts as a human approval.
 Process and risk tiers: `docs/code-review-process.md`.
 
 ## What failure looks like here
