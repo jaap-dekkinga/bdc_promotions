@@ -7,11 +7,12 @@ Costs marked **confirmed** come from Printful's published base pricing (checked 
 | Product | Suggested blank | Base cost | Retail price | Margin | Margin % |
 |---|---|---|---|---|---|
 | Classic Tee | Gildan 5000 | $9.44 *(confirmed, Printful dashboard Oct 2026)* | $16.94 | $7.50 | 44% |
-| Adams Morgan Tee | Gildan 5000 | $10.92 *(confirmed, Printful dashboard Oct 2026)* | $20 | $9.08 | 45% |
+| Adams Morgan Tee | Gildan 5000 | $10.92 *(confirmed, Printful dashboard Oct 2026)* | $18.42 | $7.50 | 41% |
 | Shaw Tee | Gildan 5000 | $10.92 *(confirmed, Printful dashboard Oct 2026)* | $18.42 | $7.50 | 41% |
 | Dupont Circle Tee | Gildan 5000 | $10.92 *(confirmed, Printful dashboard Oct 2026)* | $18.42 | $7.50 | 41% |
 | Independence Tee A | Gildan 5000 | $9.44 *(confirmed, Printful dashboard Oct 2026)* | $18.50 | $9.06 | 49% |
 | Independence Tee B | Gildan 5000 | $9.44 *(confirmed, Printful dashboard Oct 2026)* | $18.50 | $9.06 | 49% |
+| Crop Top | All-Over Print Crop Top | $18.68 *(confirmed, Printful dashboard Oct 2026)* | $30.50 | $11.82 | 39% |
 | Hoodie | Cotton Heritage M2580 | $27.84 *(confirmed, Printful dashboard Oct 2026)* | $36.50 | $8.66 | 24% |
 | Snapback Hat (embroidered) | Yupoong 6089M | $17.23 *(confirmed, Printful dashboard Oct 2026)* | $25 | $7.77 | 31% |
 | Baseball Cap | Yupoong 6245CM | $14.94 *(confirmed, Printful dashboard Oct 2026)* | $25 | $10.06 | 40% |
