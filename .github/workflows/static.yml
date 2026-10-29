@@ -85,8 +85,11 @@ jobs:
           python - <<'PY'
           import re, sys, pathlib
 
-          html = pathlib.Path("index.html").read_text(encoding="utf-8")
-          paths = set(re.findall(r'(?:src|href)="(assets/[^"]+)"', html))
+          pages = ["index.html", "privacy.html", "terms.html"]
+          paths = set()
+          for page in pages:
+              html = pathlib.Path(page).read_text(encoding="utf-8")
+              paths |= set(re.findall(r'(?:src|href)="(assets/[^"]+)"', html))
           missing = [p for p in sorted(paths) if not pathlib.Path(p).exists()]
 
           if missing:
@@ -107,12 +110,14 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y tidy
-          output=$(tidy -q -e index.html 2>&1) || true
-          echo "$output"
-          if echo "$output" | grep -q "Error:"; then
-            echo "::error::HTML Tidy found structural errors in index.html"
-            exit 1
-          fi
+          for page in index.html privacy.html terms.html; do
+            output=$(tidy -q -e "$page" 2>&1) || true
+            echo "$page: $output"
+            if echo "$output" | grep -q "Error:"; then
+              echo "::error::HTML Tidy found structural errors in $page"
+              exit 1
+            fi
+          done
           echo "No structural HTML errors (any warnings above are informational)."
 
   # Only runs after validate succeeds, and only for pushes to main (never
@@ -143,7 +148,7 @@ jobs:
       - name: Collect storefront files
         run: |
           mkdir _site
-          cp index.html _site/
+          cp index.html privacy.html terms.html _site/
           cp -r assets _site/
           if [ -f CNAME ]; then cp CNAME _site/; fi
           find _site -type f | sort

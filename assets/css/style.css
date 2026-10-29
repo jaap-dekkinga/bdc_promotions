@@ -324,3 +324,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   html{ scroll-behavior:auto; }
   .btn, .nav-links a::after{ transition:none; }
 }
+
+/* ---- Legal pages (privacy.html, terms.html) ---------------------------- */
+.footer-legal{ margin-top:8px; }
+.footer-legal a{ color: rgba(255,255,255,0.75); text-decoration: underline; text-underline-offset: 2px; }
+.footer-legal a:hover{ color:#fff; }
+.legal{ padding-block: clamp(40px, 7vw, 80px); }
+.legal-body{ max-width: 760px; }
+.legal h1{ font-size: clamp(2.4rem, 6vw, 3.6rem); color: var(--navy); margin-top: 10px; }
+.legal-meta{ margin-top: 12px; font-family:'IBM Plex Mono', ui-monospace, monospace; font-size: 0.82rem; color: var(--muted); }
+.legal h2{ font-size: clamp(1.5rem, 3.5vw, 1.9rem); color: var(--navy); margin-top: 40px; }
+.legal h3{ font-family:'Inter', sans-serif; text-transform:none; font-size: 1.05rem; font-weight:700; letter-spacing:0; margin-top: 22px; }
+.legal p, .legal li{ font-size: 1rem; line-height: 1.65; color: var(--ink); }
+.legal p{ margin-top: 14px; }
+.legal ul{ margin-top: 12px; padding-left: 1.2rem; }
+.legal li + li{ margin-top: 8px; }
+.legal a{ color: var(--navy); text-underline-offset: 2px; }
+.legal a:hover{ color: var(--red); }
